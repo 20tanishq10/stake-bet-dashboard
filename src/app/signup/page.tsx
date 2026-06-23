@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,10 +17,10 @@ type InviteValidationResponse = {
 
 export default function SignupPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const supabase = useMemo(() => createClient(), []);
 
-  const inviteToken = searchParams.get("invite") ?? "";
+  const [inviteToken, setInviteToken] = useState("");
+  const [hydrated, setHydrated] = useState(false);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -32,6 +32,16 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setInviteToken(params.get("invite") ?? "");
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) {
+      return;
+    }
+
     async function runValidation() {
       setInviteChecked(false);
       setInviteValid(false);
@@ -67,7 +77,7 @@ export default function SignupPage() {
     }
 
     void runValidation();
-  }, [inviteToken]);
+  }, [hydrated, inviteToken]);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

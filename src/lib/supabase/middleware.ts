@@ -1,10 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 type CookieToSet = {
   name: string;
   value: string;
-  options?: any;
+  options?: Partial<ResponseCookie>;
 };
 
 const AUTH_PAGES = new Set(["/login", "/signup"]);
