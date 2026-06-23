@@ -15,6 +15,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nextPath, setNextPath] = useState("/dashboard");
+  const [magicStatus, setMagicStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,6 +43,34 @@ export default function LoginPage() {
 
     router.push(nextPath);
     router.refresh();
+  }
+
+  async function sendMagicLink() {
+    if (!email) {
+      setError("Enter your email first.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setMagicStatus(null);
+
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
+    const { error: magicError } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: redirectTo,
+      },
+    });
+
+    setLoading(false);
+
+    if (magicError) {
+      setError(magicError.message);
+      return;
+    }
+
+    setMagicStatus("Magic link sent. Check your inbox.");
   }
 
   return (
@@ -84,9 +113,14 @@ export default function LoginPage() {
             </div>
 
             {error ? <p className="text-sm text-destructive">{error}</p> : null}
+            {magicStatus ? <p className="text-sm text-primary">{magicStatus}</p> : null}
 
             <Button className="w-full" type="submit" disabled={loading}>
               {loading ? "Signing in..." : "Sign in"}
+            </Button>
+
+            <Button type="button" variant="outline" className="w-full" disabled={loading} onClick={sendMagicLink}>
+              Send magic link
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">

@@ -8,6 +8,41 @@ export type Json =
 
 export type Database = {
   public: {
+    Views: {
+      users: {
+        Row: {
+          id: string;
+          name: string;
+          email: string | null;
+          wallet_balance: number;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+      };
+      bet_participants: {
+        Row: {
+          id: string;
+          bet_id: string;
+          user_id: string;
+          share_percentage: number;
+          contribution: number;
+        };
+        Insert: never;
+        Update: never;
+      };
+      transactions: {
+        Row: {
+          id: string;
+          user_id: string;
+          amount: number;
+          type: string;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+      };
+    };
     Tables: {
       profiles: {
         Row: {
@@ -113,6 +148,220 @@ export type Database = {
           status?: string;
           home_goals?: number | null;
           away_goals?: number | null;
+          raw_payload?: Json;
+          synced_at?: string;
+        };
+      };
+      teams: {
+        Row: {
+          id: number;
+          league_id: number;
+          season: string;
+          name: string;
+          short_name: string | null;
+          badge_url: string | null;
+          flag_url: string | null;
+          country: string | null;
+          stadium: string | null;
+          formed_year: number | null;
+          raw_payload: Json;
+          synced_at: string;
+        };
+        Insert: {
+          id: number;
+          league_id?: number;
+          season?: string;
+          name: string;
+          short_name?: string | null;
+          badge_url?: string | null;
+          flag_url?: string | null;
+          country?: string | null;
+          stadium?: string | null;
+          formed_year?: number | null;
+          raw_payload?: Json;
+          synced_at?: string;
+        };
+        Update: {
+          id?: number;
+          league_id?: number;
+          season?: string;
+          name?: string;
+          short_name?: string | null;
+          badge_url?: string | null;
+          flag_url?: string | null;
+          country?: string | null;
+          stadium?: string | null;
+          formed_year?: number | null;
+          raw_payload?: Json;
+          synced_at?: string;
+        };
+      };
+      players: {
+        Row: {
+          id: number;
+          team_id: number | null;
+          league_id: number;
+          season: string;
+          name: string;
+          firstname: string | null;
+          lastname: string | null;
+          nationality: string | null;
+          birth_date: string | null;
+          position: string | null;
+          photo_url: string | null;
+          raw_payload: Json;
+          synced_at: string;
+        };
+        Insert: {
+          id: number;
+          team_id?: number | null;
+          league_id?: number;
+          season?: string;
+          name: string;
+          firstname?: string | null;
+          lastname?: string | null;
+          nationality?: string | null;
+          birth_date?: string | null;
+          position?: string | null;
+          photo_url?: string | null;
+          raw_payload?: Json;
+          synced_at?: string;
+        };
+        Update: {
+          id?: number;
+          team_id?: number | null;
+          league_id?: number;
+          season?: string;
+          name?: string;
+          firstname?: string | null;
+          lastname?: string | null;
+          nationality?: string | null;
+          birth_date?: string | null;
+          position?: string | null;
+          photo_url?: string | null;
+          raw_payload?: Json;
+          synced_at?: string;
+        };
+      };
+      match_stats: {
+        Row: {
+          id: string;
+          match_id: number;
+          league_id: number;
+          season: string;
+          stat_type: string;
+          stat_value: string | null;
+          raw_payload: Json;
+          synced_at: string;
+        };
+        Insert: {
+          id?: string;
+          match_id: number;
+          league_id?: number;
+          season?: string;
+          stat_type: string;
+          stat_value?: string | null;
+          raw_payload?: Json;
+          synced_at?: string;
+        };
+        Update: {
+          id?: string;
+          match_id?: number;
+          league_id?: number;
+          season?: string;
+          stat_type?: string;
+          stat_value?: string | null;
+          raw_payload?: Json;
+          synced_at?: string;
+        };
+      };
+      player_stats: {
+        Row: {
+          id: string;
+          match_id: number | null;
+          player_id: number;
+          league_id: number;
+          season: string;
+          stat_type: string;
+          stat_value: string | null;
+          raw_payload: Json;
+          synced_at: string;
+        };
+        Insert: {
+          id?: string;
+          match_id?: number | null;
+          player_id: number;
+          league_id?: number;
+          season?: string;
+          stat_type: string;
+          stat_value?: string | null;
+          raw_payload?: Json;
+          synced_at?: string;
+        };
+        Update: {
+          id?: string;
+          match_id?: number | null;
+          player_id?: number;
+          league_id?: number;
+          season?: string;
+          stat_type?: string;
+          stat_value?: string | null;
+          raw_payload?: Json;
+          synced_at?: string;
+        };
+      };
+      standings: {
+        Row: {
+          id: string;
+          league_id: number;
+          season: string;
+          team_id: number | null;
+          rank: number | null;
+          group_name: string | null;
+          played: number | null;
+          wins: number | null;
+          draws: number | null;
+          losses: number | null;
+          goals_for: number | null;
+          goals_against: number | null;
+          goal_difference: number | null;
+          points: number | null;
+          raw_payload: Json;
+          synced_at: string;
+        };
+        Insert: {
+          id?: string;
+          league_id?: number;
+          season?: string;
+          team_id?: number | null;
+          rank?: number | null;
+          group_name?: string | null;
+          played?: number | null;
+          wins?: number | null;
+          draws?: number | null;
+          losses?: number | null;
+          goals_for?: number | null;
+          goals_against?: number | null;
+          goal_difference?: number | null;
+          points?: number | null;
+          raw_payload?: Json;
+          synced_at?: string;
+        };
+        Update: {
+          id?: string;
+          league_id?: number;
+          season?: string;
+          team_id?: number | null;
+          rank?: number | null;
+          group_name?: string | null;
+          played?: number | null;
+          wins?: number | null;
+          draws?: number | null;
+          losses?: number | null;
+          goals_for?: number | null;
+          goals_against?: number | null;
+          goal_difference?: number | null;
+          points?: number | null;
           raw_payload?: Json;
           synced_at?: string;
         };

@@ -14,6 +14,7 @@ const PROTECTED_PREFIXES = ["/dashboard", "/matches", "/bets", "/activity", "/ad
 function isPublicPath(pathname: string) {
   if (pathname === "/") return true;
   if (AUTH_PAGES.has(pathname)) return true;
+  if (pathname === "/auth/callback") return true;
   if (pathname.startsWith("/invite/")) return true;
   if (pathname.startsWith("/docs")) return true;
   if (pathname === "/api/invites/validate") return true;

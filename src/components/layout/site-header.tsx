@@ -21,6 +21,7 @@ export function SiteHeader() {
             ["Matches", "/matches"],
             ["Bets", "/bets"],
             ["Activity", "/activity"],
+            ["Admin", "/admin"],
           ].map(([label, href]) => (
             <a
               key={href}

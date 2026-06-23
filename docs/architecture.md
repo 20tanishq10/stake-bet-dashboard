@@ -125,7 +125,7 @@ See `.env.example`. Required for Phase 2+: Supabase keys. Phase 3+: `API_FOOTBAL
 |---|---|
 | **1** (current) | System design, schema, project scaffold |
 | **2** | Auth, invites, wallets, ledger, activity |
-| **3** | API-Football sync, match browser |
-| **4** | Bet CRUD, join pool, stake locking |
-| **5** | Settlement engine, host admin, AI parse |
-| **6** | PnL dashboard, polish, Vercel deploy |
+| **3** | Authentication & user management |
+| **4** | API-Football sync, match browser |
+| **5** | Bet CRUD, join pool, stake locking |
+| **6** | Settlement engine, host admin, dashboard polish |

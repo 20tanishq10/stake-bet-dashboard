@@ -37,6 +37,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | [Data model](./docs/data-model.md) | Tables, settlement math, RLS |
 | [API contracts](./docs/api-contracts.md) | Route handlers, RPC, external APIs |
 | [Auth flow](./docs/auth-flow.md) | Invites, roles, session handling |
+| [Phase 3 checklist](./docs/phase-3.md) | Auth, dashboard, host tools, manual setup |
 
 ## Project structure
 
@@ -68,11 +69,11 @@ See [`.env.example`](./.env.example). Minimum for local dev:
 ## Phase status
 
 - [x] **Phase 1** — System design & scaffold
-- [ ] Phase 2 — Auth, wallets, ledger, activity
-- [ ] Phase 3 — Match sync & browser
-- [ ] Phase 4 — Bets & stake pooling
-- [ ] Phase 5 — Settlement & host admin
-- [ ] Phase 6 — Dashboard polish & deploy
+- [x] **Phase 2** — Auth, wallets, ledger, activity
+- [ ] **Phase 3** — Authentication & user management
+- [ ] Phase 4 — Match sync & browser
+- [ ] Phase 5 — Bets & stake pooling
+- [ ] Phase 6 — Settlement & host admin
 
 ## License
 
