@@ -19,15 +19,15 @@ const modules = [
   },
   {
     title: "Matches",
-    description: "FIFA World Cup 2026 fixture browser powered by API-Football.",
+    description: "FIFA World Cup 2026 fixture browser powered by TheSportsDB.",
     href: "/matches",
-    status: "Phase 3",
+    status: "Phase 4",
   },
   {
     title: "Bets",
     description: "Create pooled market bets and split stakes proportionally.",
     href: "/bets",
-    status: "Phase 4",
+    status: "Phase 5",
   },
   {
     title: "Activity",
@@ -75,7 +75,7 @@ export default function HomePage() {
         <CardHeader>
           <CardTitle className="text-lg">Architecture locked</CardTitle>
           <CardDescription>
-            Next.js · TypeScript · Tailwind · ShadCN · Supabase · API-Football ·
+            Next.js · TypeScript · Tailwind · ShadCN · Supabase · TheSportsDB ·
             OpenRouter · Vercel
           </CardDescription>
         </CardHeader>

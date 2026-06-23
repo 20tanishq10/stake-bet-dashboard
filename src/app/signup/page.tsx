@@ -25,6 +25,7 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [inviteEmail, setInviteEmail] = useState<string | null>(null);
   const [inviteChecked, setInviteChecked] = useState(false);
   const [inviteValid, setInviteValid] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
@@ -46,6 +47,7 @@ export default function SignupPage() {
       setInviteChecked(false);
       setInviteValid(false);
       setInviteError(null);
+      setInviteEmail(null);
 
       if (!inviteToken) {
         setInviteChecked(true);
@@ -69,6 +71,7 @@ export default function SignupPage() {
       }
 
       if (data.email) {
+        setInviteEmail(data.email);
         setEmail(data.email);
       }
 
@@ -91,43 +94,31 @@ export default function SignupPage() {
       return;
     }
 
-    const { data, error: signUpError } = await supabase.auth.signUp({
+    if (inviteEmail && email.toLowerCase() !== inviteEmail.toLowerCase()) {
+      setLoading(false);
+      setError("Email must match the address on your invite.");
+      return;
+    }
+
+    const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
           display_name: name,
+          invite_token: inviteToken,
         },
       },
     });
 
+    setLoading(false);
+
     if (signUpError) {
-      setLoading(false);
       setError(signUpError.message);
       return;
     }
 
-    const accessToken = data.session?.access_token;
-    if (accessToken) {
-      await fetch("/api/invites/consume", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ token: inviteToken }),
-      });
-    }
-
-    setLoading(false);
-
-    if (data.session) {
-      router.push("/dashboard");
-      router.refresh();
-      return;
-    }
-
-    router.push("/login");
+    router.push("/login?message=Account+created.+Sign+in+to+continue.");
   }
 
   return (
@@ -161,8 +152,9 @@ export default function SignupPage() {
                 id="email"
                 type="email"
                 required
+                readOnly={Boolean(inviteEmail)}
                 autoComplete="email"
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm read-only:opacity-70"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
               />

@@ -1,5 +1,5 @@
 -- Bootstrap the first host user
--- Usage: replace '<EMAIL>' with the host's email and run in Supabase SQL editor.
+-- Usage: replace '<EMAIL>' and '<DISPLAY_NAME>' then run in Supabase SQL editor.
 
 -- 1) Find the user id from auth.users
 -- SELECT id, email FROM auth.users WHERE email = '<EMAIL>' LIMIT 1;
@@ -9,7 +9,7 @@
 
 -- 2) Ensure a profiles row exists for that user (create if missing)
 INSERT INTO public.profiles (id, display_name, role, wallet_balance, created_at)
-SELECT u.id, '<DISPLAY_NAME>' as display_name, 'host'::text as role, 0::numeric as wallet_balance, now()
+SELECT u.id, '<DISPLAY_NAME>'::text, 'host'::public.user_role, 0::numeric, now()
 FROM auth.users u
 WHERE u.email = '<EMAIL>'
 ON CONFLICT (id) DO UPDATE SET display_name = EXCLUDED.display_name

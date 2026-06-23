@@ -6,34 +6,45 @@ Phase 1 defines interfaces; implementations land in Phases 2–5.
 
 Most reads/writes go through Supabase JS client with RLS — no custom REST layer for CRUD.
 
-### Phase 2 RPC functions (planned)
+### RPC functions
 
-| Function | Caller | Purpose |
-|---|---|---|
-| `join_bet(bet_id, stake)` | Participant | Lock stake, update share_pct |
-| `adjust_wallet(user_id, amount, note)` | Host | Credit/debit with ledger entry |
-| `settle_bet(bet_id, net_result)` | Host / cron | Proportional payout + ledger |
-| `void_bet(bet_id, reason)` | Host | Refund all stakes |
+| Function | Status | Caller | Purpose |
+|---|---|---|---|
+| `adjust_wallet(p_user_id, p_amount, p_note, p_actor_id)` | **Implemented** | Host (via admin API) | Atomic credit/debit + ledger + activity |
+| `join_bet(bet_id, stake)` | Planned | Participant | Lock stake, update share_pct |
+| `settle_bet(bet_id, net_result)` | Planned | Host / cron | Proportional payout + ledger |
+| `void_bet(bet_id, reason)` | Planned | Host | Refund all stakes |
 
 ## Next.js Route Handlers
 
 ### `GET /api/cron/sync-matches`
 
-Sync FIFA WC 2026 fixtures from API-Football → `matches` table.
+Sync FIFA WC 2026 data from TheSportsDB → Supabase cache tables (`matches`, `teams`, `players`, `match_stats`, `player_stats`, `standings`).
 
-**Auth**: `Authorization: Bearer ${CRON_SECRET}`
+**Auth**: `Authorization: Bearer ${CRON_SECRET}` (or `x-cron-secret` header)
 
 **Response**
 
 ```json
-{ "synced": 48, "season": 2026 }
+{
+  "synced": {
+    "league": 1,
+    "teams": 32,
+    "fixtures": 48,
+    "results": 10,
+    "standings": 32,
+    "players": 3,
+    "playerStats": 9,
+    "matchStats": 120
+  }
+}
 ```
 
-**Schedule**: Every 6 hours (`vercel.json`); tighten during live tournament.
+**Schedule**: Every 15 minutes (`vercel.json`).
 
 ---
 
-### `POST /api/invites/validate` (Phase 2)
+### `POST /api/invites/validate`
 
 Validate invite token before signup form.
 
@@ -47,6 +58,18 @@ Validate invite token before signup form.
 
 ```json
 { "valid": true, "email": "friend@example.com", "expiresAt": "2026-06-01T00:00:00Z" }
+```
+
+---
+
+### `POST /api/admin/wallet`
+
+Host wallet adjustment (delegates to `adjust_wallet` RPC).
+
+**Body**
+
+```json
+{ "userId": "uuid", "amount": 50, "note": "Top up" }
 ```
 
 ---
@@ -98,18 +121,23 @@ Parse natural language bet into structured rule via OpenRouter/Qwen.
 }
 ```
 
-## API-Football (external)
+## TheSportsDB (external)
 
-Wrapper: `src/lib/api-football/client.ts`
+Wrapper: `src/lib/thesportsdb/client.ts`
 
 | Method | Endpoint | Use |
 |---|---|---|
-| `getWorldCupFixtures(season)` | `GET /fixtures?league={id}&season=2026` | Cron sync |
-| `getFixtureById(id)` | `GET /fixtures?id={id}` | Match detail, settlement |
+| `getWorldCupFixtures()` | `eventsseason.php` | Upcoming WC fixtures |
+| `getWorldCupHistoricalResults()` | `eventslast.php` | Recent results |
+| `getWorldCupTeams()` | `search_all_teams.php` | WC teams |
+| `getFocusTeams()` | `searchteams.php` | Arsenal, Liverpool, Barcelona |
+| `getFocusPlayers()` | `searchplayers.php` | Haaland, Salah, Mbappe |
+| `getEventStats(id)` | `lookupeventstats.php` | Match stats (possession, shots, etc.) |
+| `getWorldCupStandings()` | `lookuptable.php` | Group tables |
 
-**Headers**: `x-apisports-key: ${API_FOOTBALL_KEY}`
+**Env**: `THESPORTSDB_API_KEY`, `THESPORTSDB_LEAGUE_ID`, `THESPORTSDB_SEASON`
 
-**Caching**: DB table `matches` is canonical after sync; avoid hitting API on every page load.
+**Caching**: Supabase cache tables are canonical after cron sync; avoid hitting API on every page load.
 
 ## OpenRouter (external)
 

@@ -114,6 +114,7 @@ export async function POST(request: Request) {
     email_confirm: true,
     user_metadata: {
       display_name: body.name,
+      created_by_admin: true,
     },
   });
 

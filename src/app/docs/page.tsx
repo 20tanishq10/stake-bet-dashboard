@@ -26,7 +26,7 @@ const docs = [
     title: "API Contracts",
     href: "/docs/api-contracts",
     file: "docs/api-contracts.md",
-    summary: "Route handlers, RPC, API-Football, OpenRouter.",
+    summary: "Route handlers, RPC, TheSportsDB, OpenRouter.",
   },
   {
     title: "Auth Flow",

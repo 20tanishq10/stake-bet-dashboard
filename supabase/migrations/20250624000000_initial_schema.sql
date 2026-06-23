@@ -59,7 +59,7 @@ create table public.invites (
 
 create index invites_token_idx on public.invites (token);
 
--- ─── Cached WC matches (API-Football) ─────────────────────────
+-- ─── Cached WC matches (TheSportsDB) ────────────────────────────
 create table public.matches (
   id bigint primary key,
   league_id int not null,

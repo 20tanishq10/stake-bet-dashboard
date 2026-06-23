@@ -223,7 +223,7 @@ Host-generated signup links.
 
 ### `matches`
 
-Cached API-Football fixtures — **WC 2026 only**.
+Cached TheSportsDB fixtures — **WC 2026 only**.
 
 Synced via cron; bets reference `match_id` for auto-settlement rules.
 

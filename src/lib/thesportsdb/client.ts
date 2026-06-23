@@ -4,6 +4,7 @@ const LEAGUE_ID = process.env.THESPORTSDB_LEAGUE_ID ?? "4429";
 const SEASON = process.env.THESPORTSDB_SEASON ?? "2026";
 
 export const FOCUS_PLAYERS = ["Haaland", "Salah", "Mbappe"] as const;
+export const FOCUS_TEAMS = ["Arsenal", "Liverpool", "Barcelona"] as const;
 
 export type TheSportsDbLeague = {
   idLeague: string;
@@ -115,6 +116,22 @@ export async function lookupLeague() {
 export async function getWorldCupTeams() {
   const data = await fetchTheSportsDb("search_all_teams.php", { l: "FIFA World Cup" });
   return extractRows<TheSportsDbTeam>(data);
+}
+
+export async function searchTeamByName(name: string) {
+  const data = await fetchTheSportsDb("searchteams.php", { t: name });
+  return extractRows<TheSportsDbTeam>(data);
+}
+
+export async function getFocusTeams() {
+  const allTeams = await Promise.all(FOCUS_TEAMS.map((name) => searchTeamByName(name)));
+  const byId = new Map<string, TheSportsDbTeam>();
+
+  for (const team of allTeams.flat()) {
+    byId.set(team.idTeam, team);
+  }
+
+  return [...byId.values()];
 }
 
 export async function getWorldCupFixtures() {

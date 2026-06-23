@@ -22,10 +22,12 @@ Phase 3 focuses on authentication, host tools, and the user dashboard.
 - [ ] Set `CRON_SECRET` and `NEXT_PUBLIC_APP_URL` in Vercel
 - [ ] Bootstrap the first host user in Supabase
 - [ ] Create the first invite and share it with the group
-- [ ] Verify `/admin` and `/dashboard` against the live Supabase project
+- [x] Verify `/admin` and `/dashboard` against the live Supabase project
+- [ ] Apply migration `20260624030000_phase4_hardening.sql` (invite enforcement + wallet RPC)
 
 ## Notes
 
-- Host actions still depend on `SUPABASE_SERVICE_ROLE_KEY` server-side.
-- Wallet updates are currently handled through the admin API; RPC functions are still a good future hardening step.
-- Invite creation is host-only and uses single-use tokens with expiry.
+- Host actions use `SUPABASE_SERVICE_ROLE_KEY` server-side.
+- Wallet updates go through the `adjust_wallet` Postgres RPC (atomic balance + ledger + activity).
+- Signup requires a valid invite token (enforced in DB trigger on `auth.users`).
+- See [DEPLOYMENT.md](./DEPLOYMENT.md) for Supabase and Vercel setup.

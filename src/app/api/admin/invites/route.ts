@@ -88,6 +88,16 @@ export async function POST(request: Request) {
 
   const typedInvite = data as InviteRow;
 
+  await admin.from("activity_logs").insert({
+    event_type: "invite_created",
+    actor_id: user.id,
+    metadata: {
+      invite_id: typedInvite.id,
+      email: typedInvite.email,
+      expires_at: typedInvite.expires_at,
+    },
+  } as never);
+
   return NextResponse.json({
     invite: typedInvite,
     inviteUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/invite/${typedInvite.token}`,

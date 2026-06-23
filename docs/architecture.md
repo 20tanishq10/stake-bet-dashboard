@@ -8,7 +8,7 @@ Football Stake Tracker is a private-group platform for pooling virtual stakes on
 |---|---|
 | Frontend | Next.js 15 (App Router), TypeScript, Tailwind CSS 4, ShadCN UI |
 | Backend | Supabase (Postgres, Auth, RLS) |
-| Football data | API-Football |
+| Football data | TheSportsDB (cached in Supabase) |
 | AI (later) | OpenRouter → Qwen |
 | Deployment | Vercel |
 
@@ -33,7 +33,7 @@ flowchart TB
   end
 
   subgraph external [External APIs]
-    AF[API-Football]
+    TSDB[TheSportsDB]
     OR[OpenRouter / Qwen]
   end
 
@@ -42,7 +42,7 @@ flowchart TB
   SSR --> AUTH
   SSR --> DB
   API --> DB
-  API --> AF
+  API --> TSDB
   API --> OR
   CRON --> API
   AUTH --> RLS
@@ -86,7 +86,7 @@ src/
 │   └── ui/                 # ShadCN primitives
 ├── lib/
 │   ├── supabase/           # Browser + server clients
-│   ├── api-football/       # External football API
+│   ├── thesportsdb/        # External football API (Phase 4)
 │   ├── openrouter/         # AI client (Phase 5+)
 │   └── settlement/         # Proportional payout math
 └── types/
@@ -112,12 +112,12 @@ docs/                       # System design reference
 |---|---|---|
 | Vercel | Hobby | Next.js hosting, cron, serverless API |
 | Supabase | Free | 500 MB DB, 50k MAU auth, Realtime optional |
-| API-Football | Free/paid | Rate-limited fixture sync — cache in DB |
+| TheSportsDB | Free/paid | Fixture & stats sync — cache in DB |
 | OpenRouter | Pay-as-go | AI features deferred to Phase 5+ |
 
 ## Environment variables
 
-See `.env.example`. Required for Phase 2+: Supabase keys. Phase 3+: `API_FOOTBALL_KEY`. Phase 5+: `OPENROUTER_API_KEY`.
+See `.env.example`. Required: Supabase keys, `THESPORTSDB_API_KEY`, `CRON_SECRET`. Phase 5+: `OPENROUTER_API_KEY`.
 
 ## Phase map
 
@@ -126,6 +126,6 @@ See `.env.example`. Required for Phase 2+: Supabase keys. Phase 3+: `API_FOOTBAL
 | **1** (current) | System design, schema, project scaffold |
 | **2** | Auth, invites, wallets, ledger, activity |
 | **3** | Authentication & user management |
-| **4** | API-Football sync, match browser |
+| **4** | TheSportsDB sync, match browser |
 | **5** | Bet CRUD, join pool, stake locking |
 | **6** | Settlement engine, host admin, dashboard polish |

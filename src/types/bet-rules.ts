@@ -1,5 +1,5 @@
 /**
- * Structured bet rules evaluated against API-Football match data
+ * Structured bet rules evaluated against cached match data (TheSportsDB / matches table)
  * or host-confirmed market outcomes (Polymarket reference).
  */
 export type BetRule =

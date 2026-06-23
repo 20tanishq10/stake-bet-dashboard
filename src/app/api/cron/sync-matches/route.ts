@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import {
   getEventStats,
   getFocusPlayers,
+  getFocusTeams,
   getWorldCupFixtures,
   getWorldCupHistoricalResults,
   getWorldCupStandings,
@@ -18,9 +19,13 @@ import {
 } from "@/lib/thesportsdb/client";
 
 function isAuthorized(request: Request) {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    return false;
+  }
+
   const authHeader = request.headers.get("authorization");
   const secretHeader = request.headers.get("x-cron-secret");
-  const cronSecret = process.env.CRON_SECRET;
   return (
     authHeader === `Bearer ${cronSecret}` ||
     secretHeader === cronSecret
@@ -36,6 +41,23 @@ function adminClient() {
   }
 
   return createClient(supabaseUrl, serviceRoleKey);
+}
+
+function finishedMatchIds(
+  fixtures: Awaited<ReturnType<typeof getWorldCupFixtures>>,
+  results: Awaited<ReturnType<typeof getWorldCupHistoricalResults>>,
+) {
+  const ids = new Set<number>();
+
+  for (const event of [...fixtures, ...results]) {
+    const status = (event.strStatus ?? "").toUpperCase();
+    const hasScore = event.intHomeScore != null && event.intAwayScore != null;
+    if (hasScore || status.includes("FT") || status.includes("FINISH")) {
+      ids.add(Number(event.idEvent));
+    }
+  }
+
+  return [...ids];
 }
 
 async function syncMatchStats(matchIds: number[]) {
@@ -58,15 +80,18 @@ export async function GET(request: Request) {
 
   const supabase = adminClient();
   const league = await lookupLeague();
-  const [teams, fixtures, results, standings, focusPlayers] = await Promise.all([
+  const [teams, focusTeams, fixtures, results, standings, focusPlayers] = await Promise.all([
     getWorldCupTeams(),
+    getFocusTeams(),
     getWorldCupFixtures(),
     getWorldCupHistoricalResults(),
     getWorldCupStandings(),
     getFocusPlayers(),
   ]);
 
-  const teamRows = teams.map(mapTeamRow);
+  const allTeams = [...teams, ...focusTeams];
+  const teamById = new Map(allTeams.map((team) => [team.idTeam, team]));
+  const teamRows = [...teamById.values()].map(mapTeamRow);
   const fixtureRows = fixtures.map(mapMatchRow);
   const resultRows = results.map(mapMatchRow);
   const standingsRows = standings.map(mapStandingsRow);
@@ -74,9 +99,7 @@ export async function GET(request: Request) {
   const playerStatRows = focusPlayers.flatMap((player) =>
     mapPlayerStatRows(Number(player.idPlayer), player),
   );
-  const matchStatRows = await syncMatchStats(
-    results.slice(0, 10).map((event) => Number(event.idEvent)),
-  );
+  const matchStatRows = await syncMatchStats(finishedMatchIds(fixtures, results));
 
   const [teamsResult, fixturesResult, resultsResult, standingsResult, playersResult, playerStatsResult, matchStatsResult] =
     await Promise.all([

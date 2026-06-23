@@ -6,7 +6,7 @@ Private FIFA World Cup 2026 stake pool tracker for friends betting together **ag
 
 - **Frontend**: Next.js 15, TypeScript, Tailwind CSS 4, ShadCN UI
 - **Backend**: Supabase (Postgres, Auth, RLS)
-- **Data**: API-Football
+- **Data**: TheSportsDB (cached in Supabase)
 - **AI** (later): OpenRouter / Qwen
 - **Deploy**: Vercel + Supabase (free tier)
 
@@ -18,10 +18,10 @@ npm install
 
 # 2. Copy environment template
 cp .env.example .env.local
-# Fill in Supabase + API keys
+# Fill in Supabase + TheSportsDB keys
 
-# 3. Apply database migration (Supabase dashboard SQL editor or CLI)
-# Run: supabase/migrations/20250624000000_initial_schema.sql
+# 3. Apply all database migrations (Supabase dashboard SQL editor or CLI)
+# See docs/DEPLOYMENT.md for the full list
 
 # 4. Start dev server
 npm run dev
@@ -37,14 +37,16 @@ Open [http://localhost:3000](http://localhost:3000).
 | [Data model](./docs/data-model.md) | Tables, settlement math, RLS |
 | [API contracts](./docs/api-contracts.md) | Route handlers, RPC, external APIs |
 | [Auth flow](./docs/auth-flow.md) | Invites, roles, session handling |
-| [Phase 3 checklist](./docs/phase-3.md) | Auth, dashboard, host tools, manual setup |
+| [Deployment](./docs/DEPLOYMENT.md) | **Supabase + Vercel setup checklist** |
+| [Phase 3 checklist](./docs/phase-3.md) | Auth, dashboard, host tools |
+| [Phase 4 checklist](./docs/phase-4.md) | Football data sync & match browser |
 
 ## Project structure
 
 ```
 src/app/              Pages and API routes
 src/components/       UI and layout
-src/lib/              Supabase, API-Football, settlement, OpenRouter
+src/lib/              Supabase, TheSportsDB, settlement, OpenRouter
 src/types/            Database and bet rule types
 supabase/migrations/  SQL schema
 docs/                 System design
@@ -57,23 +59,19 @@ See [`.env.example`](./.env.example). Minimum for local dev:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (server/cron only)
+- `THESPORTSDB_API_KEY` (use `123` for free tier testing)
+- `CRON_SECRET`
 
-## Deployment (Vercel)
-
-1. Push repo to GitHub.
-2. Import project in Vercel.
-3. Add env vars from `.env.example`.
-4. Set `CRON_SECRET` for match sync job.
-5. Link Supabase project; run migration on production DB.
+Platform setup: **[docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)**
 
 ## Phase status
 
 - [x] **Phase 1** — System design & scaffold
-- [x] **Phase 2** — Auth, wallets, ledger, activity
-- [ ] **Phase 3** — Authentication & user management
-- [ ] Phase 4 — Match sync & browser
+- [x] **Phase 2** — Database schema & compatibility views
+- [x] **Phase 3** — Authentication & user management
+- [x] **Phase 4** — TheSportsDB sync, match browser, cache RLS
 - [ ] Phase 5 — Bets & stake pooling
-- [ ] Phase 6 — Settlement & host admin
+- [ ] Phase 6 — Settlement & host admin polish
 
 ## License
 

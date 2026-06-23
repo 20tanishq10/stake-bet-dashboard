@@ -63,72 +63,20 @@ export async function POST(request: Request) {
     );
   }
 
-  const { data: targetProfile, error: profileError } = await admin
-    .from("profiles")
-    .select("id, wallet_balance")
-    .eq("id", body.userId)
-    .maybeSingle();
-
-  if (profileError) {
-    return NextResponse.json({ error: profileError.message }, { status: 500 });
-  }
-
-  type TargetProfile = {
-    id: string;
-    wallet_balance: number | null;
-  };
-
-  const typedTargetProfile = targetProfile as TargetProfile | null;
-
-  if (!typedTargetProfile) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
-
-  const nextBalance = Number(typedTargetProfile.wallet_balance ?? 0) + body.amount;
-  if (nextBalance < 0) {
-    return NextResponse.json(
-      { error: "Wallet balance cannot go below zero" },
-      { status: 400 },
-    );
-  }
-
-  const { error: updateError } = await admin
-    .from("profiles")
-    .update({ wallet_balance: nextBalance } as never)
-    .eq("id", body.userId);
-
-  if (updateError) {
-    return NextResponse.json({ error: updateError.message }, { status: 500 });
-  }
-
-  const entryType = body.amount >= 0 ? "host_credit" : "host_debit";
-
-  const { error: ledgerError } = await admin.from("wallet_ledger").insert({
-    user_id: body.userId,
-    entry_type: entryType,
-    amount: body.amount,
-    balance_after: nextBalance,
-    note: body.note?.trim() || null,
-    created_by: actor.id,
+  const { data: nextBalance, error } = await admin.rpc("adjust_wallet", {
+    p_user_id: body.userId,
+    p_amount: body.amount,
+    p_note: body.note?.trim() || null,
+    p_actor_id: actor.id,
   } as never);
 
-  if (ledgerError) {
-    return NextResponse.json({ error: ledgerError.message }, { status: 500 });
-  }
-
-  const { error: activityError } = await admin.from("activity_logs").insert({
-    event_type: "wallet_adjusted",
-    actor_id: actor.id,
-    target_user_id: body.userId,
-    metadata: {
-      amount: body.amount,
-      note: body.note ?? null,
-      balance_after: nextBalance,
-    },
-  } as never);
-
-  if (activityError) {
-    return NextResponse.json({ error: activityError.message }, { status: 500 });
+  if (error) {
+    const status =
+      error.message.includes("Forbidden") ? 403
+      : error.message.includes("not found") ? 404
+      : error.message.includes("below zero") ? 400
+      : 500;
+    return NextResponse.json({ error: error.message }, { status });
   }
 
   return NextResponse.json({
