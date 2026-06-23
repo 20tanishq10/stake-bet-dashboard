@@ -8,7 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 
 /**
  * Vercel Cron: sync WC 2026 fixtures into Supabase `matches` table.
- * Schedule in vercel.json — e.g. every 6 hours pre-tournament, tighter during WC.
+ * Schedule in vercel.json — once per day for Vercel Hobby compatibility.
  */
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
