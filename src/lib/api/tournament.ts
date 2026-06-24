@@ -29,6 +29,7 @@ export type PlayerStat = {
 export async function getPlayerStats(endpoint: string): Promise<PlayerStat[]> {
   const url = `${API_FOOTBALL_BASE_URL}/players/${endpoint}?season=2026&league=${LEAGUE_ID}`;
   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let data: any = null;
   if (API_FOOTBALL_KEY) {
     try {
