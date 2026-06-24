@@ -38,6 +38,7 @@ export function CreateBetForm({ matches }: { matches: Match[] }) {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let ruleData: any = {};
+    let parsedLockAt: string | null = null;
 
     if (type === "llm_crazy") {
       if (!crazyText) {
@@ -55,6 +56,7 @@ export function CreateBetForm({ matches }: { matches: Match[] }) {
         raw_prompt: crazyText,
         parsed_criteria: res.conditions,
       };
+      parsedLockAt = res.lock_at || null;
     } else {
       ruleData = {
         market: "match_winner",
@@ -69,6 +71,7 @@ export function CreateBetForm({ matches }: { matches: Match[] }) {
       odds: parseFloat(odds),
       rule_type: type,
       rule_data: ruleData,
+      lock_at: parsedLockAt,
     });
 
     if (!betRes.success) {
