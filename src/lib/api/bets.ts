@@ -41,7 +41,7 @@ Return ONLY valid JSON. No markdown formatting, no code blocks, just the JSON ar
 export async function createBet(formData: {
   title: string;
   description: string;
-  match_id: number;
+  match_id: number | null;
   odds: number;
   rule_type: "rule_based" | "llm_crazy";
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

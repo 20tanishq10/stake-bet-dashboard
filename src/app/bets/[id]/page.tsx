@@ -29,7 +29,14 @@ export default async function BetDetailsPage({ params }: { params: Promise<{ id:
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <div>
-        <Badge variant="outline">Bet Details</Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline">Bet Details</Badge>
+          {bet.matches ? (
+            <Badge variant="secondary">{bet.matches.home_team} vs {bet.matches.away_team}</Badge>
+          ) : (
+            <Badge variant="secondary">🏆 Tournament Bet</Badge>
+          )}
+        </div>
         <h1 className="mt-2 text-2xl font-semibold">{bet.title}</h1>
         <p className="text-muted-foreground">{bet.description}</p>
       </div>

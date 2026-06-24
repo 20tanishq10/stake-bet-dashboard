@@ -61,7 +61,7 @@ export default async function BetsPage() {
                   </div>
                 </div>
                 <CardDescription className="text-xs">
-                  {bet.matches?.home_team} vs {bet.matches?.away_team}
+                  {bet.matches ? `${bet.matches.home_team} vs ${bet.matches.away_team}` : <Badge variant="outline" className="text-[10px]">🏆 Tournament Bet</Badge>}
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex-1 flex flex-col">

@@ -30,7 +30,7 @@ export function CreateBetForm({ matches }: { matches: Match[] }) {
     setLoading(true);
     setError("");
 
-    if (!matchId || !title || !odds) {
+    if (!title || !odds) {
       setError("Please fill out all required fields.");
       setLoading(false);
       return;
@@ -65,7 +65,7 @@ export function CreateBetForm({ matches }: { matches: Match[] }) {
     const betRes = await createBet({
       title,
       description: type === "llm_crazy" ? crazyText : `Match Winner: ${ruleCondition}`,
-      match_id: parseInt(matchId),
+      match_id: matchId ? parseInt(matchId) : null,
       odds: parseFloat(odds),
       rule_type: type,
       rule_data: ruleData,
@@ -108,7 +108,7 @@ export function CreateBetForm({ matches }: { matches: Match[] }) {
               onChange={(e) => setMatchId(e.target.value)}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <option value="">-- Choose Match --</option>
+              <option value="">-- General / Tournament Bet --</option>
               {matches.map(m => (
                 <option key={m.id} value={m.id}>
                   {m.home_team} vs {m.away_team} ({new Date(m.match_time).toLocaleDateString()})
