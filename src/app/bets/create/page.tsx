@@ -4,8 +4,6 @@ import { CreateBetForm } from "./CreateBetForm";
 import { Suspense } from "react";
 
 export default async function CreateBetPage() {
-  const supabase = await createClient();
-
   return (
     <div className="space-y-6 max-w-2xl mx-auto pt-8">
       <div>
