@@ -32,6 +32,7 @@ Return ONLY valid JSON. No markdown formatting, no code blocks, just the JSON ar
     }
     
     return { success: true, conditions: JSON.parse(text) };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Gemini Parsing Error:", error);
     return { success: false, error: error.message };
@@ -44,6 +45,7 @@ export async function createBet(formData: {
   match_id: number;
   odds: number;
   rule_type: "rule_based" | "llm_crazy";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rule_data: any;
 }) {
   const supabase = await createClient();

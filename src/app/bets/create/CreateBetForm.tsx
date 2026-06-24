@@ -35,6 +35,7 @@ export function CreateBetForm({ matches }: { matches: Match[] }) {
       return;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let ruleData: any = {};
 
     if (type === "llm_crazy") {
@@ -154,7 +155,7 @@ export function CreateBetForm({ matches }: { matches: Match[] }) {
             <div className="space-y-2 pt-4 border-t">
               <label className="text-sm font-medium text-primary">Crazy Conditions (Powered by Gemini AI)</label>
               <p className="text-xs text-muted-foreground mb-2">
-                Type anything! e.g., "Messi scores a hat-trick, Mbappe gets a red card, and it rains."
+                Type anything! e.g., &quot;Messi scores a hat-trick, Mbappe gets a red card, and it rains.&quot;
               </p>
               <textarea 
                 value={crazyText} 

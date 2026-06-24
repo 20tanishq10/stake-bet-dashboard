@@ -1,5 +1,4 @@
 import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/types/database.types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const adminClient = createClient<any>(

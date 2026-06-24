@@ -30,6 +30,7 @@ export async function GET(request: Request) {
       const match = bet.matches;
       if (!match || match.status !== "finished") continue;
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const rule = bet.rule as any;
       let netResult = 0; // Negative means loss, Positive means win for participants
       let settlementNotes = "";
@@ -69,6 +70,7 @@ Return strictly JSON format:
           else netResult = 0; // Disputed
           
           settlementNotes = aiDecision.reasoning;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
           console.error("AI Referee Error:", e);
           netResult = 0; // Default to disputed

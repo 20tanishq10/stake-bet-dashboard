@@ -53,7 +53,9 @@ export default async function BetsPage() {
                   {bet.description}
                 </p>
                 <div className="mt-auto flex justify-between items-center text-xs font-medium border-t pt-3">
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   <span className="text-muted-foreground">Type: {(bet.rule as any)?.mechanism === 'llm_crazy' ? 'AI Crazy' : 'Standard'}</span>
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   <span>Odds: {(bet.rule as any)?.odds ?? '-'}</span>
                 </div>
               </CardContent>
