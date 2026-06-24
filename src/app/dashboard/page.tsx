@@ -73,7 +73,7 @@ export default async function DashboardPage() {
 
   const matches = (dashboardMatches ?? []) as MatchRow[];
   const finishedMatches = matches.filter((m) => m.status.toLowerCase() === "finished").reverse().slice(0, 2);
-  const upcomingMatches = matches.filter((m) => !["finished"].includes(m.status.toLowerCase())).slice(0, 3);
+  const upcomingMatches = matches.filter((m) => !["finished"].includes(m.status.toLowerCase())).slice(0, 4);
   
   const displayMatches = [...finishedMatches, ...upcomingMatches];
   const matchTitle = "Recent & Upcoming Matches";

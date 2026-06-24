@@ -19,8 +19,11 @@ export function PlayerStats({
 
   return (
     <div className="rounded-lg border bg-card">
-      <div className="p-4 border-b">
+      <div className="p-4 border-b flex justify-between items-center">
         <h3 className="font-semibold">{title}</h3>
+        {stats[0]?.player?.id <= 6 && (
+          <span className="text-[10px] bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full">Estimates</span>
+        )}
       </div>
       <div className="p-4 space-y-4">
         {topStats.map((stat, index) => {
