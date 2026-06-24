@@ -50,6 +50,8 @@ export type Database = {
           display_name: string;
           role: "host" | "participant";
           wallet_balance: number;
+          is_broker: boolean;
+          is_interested: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -58,6 +60,8 @@ export type Database = {
           display_name: string;
           role?: "host" | "participant";
           wallet_balance?: number;
+          is_broker?: boolean;
+          is_interested?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -66,6 +70,8 @@ export type Database = {
           display_name?: string;
           role?: "host" | "participant";
           wallet_balance?: number;
+          is_broker?: boolean;
+          is_interested?: boolean;
           created_at?: string;
           updated_at?: string;
         };

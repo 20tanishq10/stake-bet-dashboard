@@ -8,6 +8,7 @@ export default async function CreateBetPage() {
   const { data: matches } = await supabase
     .from("matches")
     .select("id, home_team, away_team, match_time")
+    .neq("status", "finished")
     .order("match_time", { ascending: true });
 
   return (

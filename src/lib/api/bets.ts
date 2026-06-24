@@ -60,12 +60,21 @@ export async function createBet(formData: {
     ...formData.rule_data
   };
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, is_broker")
+    .eq("id", user.id)
+    .single();
+
+  const isBrokerOrHost = profile?.role === "host" || profile?.is_broker === true;
+  const initialStatus = isBrokerOrHost ? "open" : "draft";
+
   const { data, error } = await supabase.from("bets").insert({
     created_by: user.id,
     match_id: formData.match_id,
     title: formData.title,
     description: formData.description,
-    status: "open",
+    status: initialStatus,
     rule: rulePayload
   }).select().single();
 
@@ -74,4 +83,24 @@ export async function createBet(formData: {
   }
 
   return { success: true, bet: data };
+}
+
+export async function approveBet(betId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Unauthorized" };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, is_broker")
+    .eq("id", user.id)
+    .single();
+
+  const isBrokerOrHost = profile?.role === "host" || profile?.is_broker === true;
+  if (!isBrokerOrHost) return { success: false, error: "Only brokers can approve bets" };
+
+  const { error } = await supabase.from("bets").update({ status: "open" }).eq("id", betId);
+  if (error) return { success: false, error: error.message };
+
+  return { success: true };
 }
