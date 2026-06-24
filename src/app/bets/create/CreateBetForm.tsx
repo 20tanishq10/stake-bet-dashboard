@@ -4,7 +4,7 @@ import { useState } from "react";
 import { parseCrazyBet, createBet } from "@/lib/api/bets";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type Match = {
   id: string;
@@ -15,8 +15,9 @@ type Match = {
 
 export function CreateBetForm({ matches }: { matches: Match[] }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [type, setType] = useState<"rule_based" | "llm_crazy">("rule_based");
-  const [matchId, setMatchId] = useState("");
+  const [matchId, setMatchId] = useState(searchParams?.get("matchId") || "");
   const [title, setTitle] = useState("");
   const [odds, setOdds] = useState("2.0");
   const [crazyText, setCrazyText] = useState("");

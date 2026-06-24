@@ -2,6 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/server";
 import { CreateBetForm } from "./CreateBetForm";
 
+import { Suspense } from "react";
+
 export default async function CreateBetPage() {
   const supabase = await createClient();
 
@@ -20,7 +22,9 @@ export default async function CreateBetPage() {
           Deploy standard pool bets or use the Gemini AI to create crazy custom parlays.
         </p>
       </div>
-      <CreateBetForm matches={matches ?? []} />
+      <Suspense fallback={<div>Loading form...</div>}>
+        <CreateBetForm matches={matches ?? []} />
+      </Suspense>
     </div>
   );
 }

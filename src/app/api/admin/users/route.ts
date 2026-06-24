@@ -55,7 +55,7 @@ export async function GET(request: Request) {
 
   const { admin } = access;
   const [profilesResult, authUsersResult] = await Promise.all([
-    admin.from("profiles").select("id, display_name, role, wallet_balance, created_at"),
+    admin.from("profiles").select("id, display_name, role, wallet_balance, is_broker, created_at"),
     admin.auth.admin.listUsers(),
   ]);
 
@@ -68,6 +68,7 @@ export async function GET(request: Request) {
     display_name: string | null;
     role: string | null;
     wallet_balance: number | null;
+    is_broker: boolean | null;
     created_at: string | null;
   };
 
@@ -87,6 +88,7 @@ export async function GET(request: Request) {
       email: authUser.email,
       wallet_balance: profile?.wallet_balance ?? 0,
       role: profile?.role ?? "participant",
+      is_broker: profile?.is_broker ?? false,
       created_at: profile?.created_at ?? authUser.created_at,
     };
   });
@@ -127,12 +129,13 @@ export async function POST(request: Request) {
     display_name: string | null;
     role: string | null;
     wallet_balance: number | null;
+    is_broker: boolean | null;
     created_at: string | null;
   };
 
   const { data: profile } = await admin
     .from("profiles")
-    .select("id, display_name, role, wallet_balance, created_at")
+    .select("id, display_name, role, wallet_balance, is_broker, created_at")
     .eq("id", data.user.id)
     .maybeSingle();
 
@@ -148,6 +151,7 @@ export async function POST(request: Request) {
       email: data.user.email,
       wallet_balance: typedProfile?.wallet_balance ?? 0,
       role: typedProfile?.role ?? "participant",
+      is_broker: typedProfile?.is_broker ?? false,
       created_at: typedProfile?.created_at ?? data.user.created_at,
     },
   });

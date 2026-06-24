@@ -12,6 +12,8 @@ import { getOpenApiGroups, getOpenApiTeams, getPlayerStats } from "@/lib/api/tou
 import { GroupStandings } from "@/components/tournament/GroupStandings";
 import { PlayerStats } from "@/components/tournament/PlayerStats";
 import { KnockoutLadder } from "@/components/tournament/KnockoutLadder";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 type MatchRow = {
   id: string;
@@ -154,6 +156,7 @@ function MatchSection({
                   <th className="px-3 py-2">Match</th>
                   <th className="px-3 py-2">Score</th>
                   <th className="px-3 py-2">Status</th>
+                  <th className="px-3 py-2"></th>
                 </tr>
               </thead>
               <tbody>
@@ -173,6 +176,13 @@ function MatchSection({
                     <td className="px-3 py-2 tabular-nums">{scoreLabel(match)}</td>
                     <td className="px-3 py-2">
                       <Badge variant="secondary">{match.status}</Badge>
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      <Link href={`/bets/create?matchId=${match.id}`}>
+                        <Button variant="outline" size="sm" className="h-7 text-xs">
+                          + Bet
+                        </Button>
+                      </Link>
                     </td>
                   </tr>
                 ))}

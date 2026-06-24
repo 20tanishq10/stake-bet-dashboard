@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
+import { BrokerToggle } from "./BrokerToggle";
 
 type AdminUser = {
   id: string;
@@ -13,6 +14,7 @@ type AdminUser = {
   email: string | null;
   wallet_balance: number;
   role: string;
+  is_broker: boolean;
   created_at: string;
 };
 
@@ -275,6 +277,7 @@ export default function AdminPage() {
                     <th className="px-3 py-2">Email</th>
                     <th className="px-3 py-2">Role</th>
                     <th className="px-3 py-2">Wallet</th>
+                    <th className="px-3 py-2 text-right">Broker</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -284,6 +287,13 @@ export default function AdminPage() {
                       <td className="px-3 py-2 text-muted-foreground">{user.email ?? "—"}</td>
                       <td className="px-3 py-2">{user.role}</td>
                       <td className="px-3 py-2">{user.wallet_balance.toFixed(2)}</td>
+                      <td className="px-3 py-2 text-right">
+                        {user.role === "host" ? (
+                          <span className="text-xs font-semibold text-muted-foreground uppercase">Host</span>
+                        ) : (
+                          <BrokerToggle userId={user.id} initialValue={user.is_broker} />
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

@@ -219,9 +219,13 @@ export function mapTeamRow(team: TheSportsDbTeam) {
 export function mapMatchRow(event: TheSportsDbEvent) {
   const homeScore = event.intHomeScore ? Number(event.intHomeScore) : null;
   const awayScore = event.intAwayScore ? Number(event.intAwayScore) : null;
+  let timeString = event.strTime;
+  if (timeString && timeString.split(":").length > 2) {
+    timeString = timeString.split(":").slice(0, 2).join(":");
+  }
   const kickoffAt =
-    event.dateEvent && event.strTime
-      ? new Date(`${event.dateEvent}T${event.strTime}:00Z`).toISOString()
+    event.dateEvent && timeString
+      ? new Date(`${event.dateEvent}T${timeString}:00Z`).toISOString()
       : event.dateEvent
         ? new Date(`${event.dateEvent}T00:00:00Z`).toISOString()
         : new Date().toISOString();
