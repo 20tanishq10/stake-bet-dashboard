@@ -25,13 +25,14 @@ type MatchRow = {
 };
 
 function formatKickoff(iso: string) {
-  return new Date(iso).toLocaleString(undefined, {
+  return new Date(iso).toLocaleString('en-IN', {
+    timeZone: 'Asia/Kolkata',
     weekday: "short",
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  });
+  }) + ' IST';
 }
 
 function scoreLabel(match: MatchRow) {

@@ -72,11 +72,11 @@ export default async function DashboardPage() {
   const typedProfile = profile as ProfileRow | null;
 
   const matches = (dashboardMatches ?? []) as MatchRow[];
-  const liveMatches = matches.filter((m) => m.status.toLowerCase() === "in-progress" || m.status.toLowerCase().includes("h"));
+  const finishedMatches = matches.filter((m) => m.status.toLowerCase() === "finished").reverse().slice(0, 2);
   const upcomingMatches = matches.filter((m) => !["finished"].includes(m.status.toLowerCase())).slice(0, 3);
   
-  const displayMatches = liveMatches.length > 0 ? liveMatches : upcomingMatches;
-  const matchTitle = liveMatches.length > 0 ? "Live Matches" : "Upcoming Matches";
+  const displayMatches = [...finishedMatches, ...upcomingMatches];
+  const matchTitle = "Recent & Upcoming Matches";
 
   return (
     <div className="space-y-6">
@@ -113,7 +113,6 @@ export default async function DashboardPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            {liveMatches.length > 0 && <span className="flex h-2 w-2 rounded-full bg-red-600 animate-pulse"></span>}
             {matchTitle}
           </CardTitle>
           <CardDescription>World Cup 2026</CardDescription>
@@ -126,11 +125,11 @@ export default async function DashboardPage() {
               {displayMatches.map((match) => (
                 <div key={match.id} className="rounded-lg border p-3 flex flex-col justify-between shadow-sm bg-muted/20">
                   <div className="flex justify-between items-center mb-3">
-                    <Badge variant={liveMatches.length > 0 ? "destructive" : "secondary"} className="text-[10px] px-1 py-0">
+                    <Badge variant={match.status === "finished" ? "secondary" : "default"} className="text-[10px] px-1 py-0">
                       {match.status}
                     </Badge>
                     <span className="text-xs text-muted-foreground">
-                      {new Date(match.match_time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(match.match_time).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' })} IST
                     </span>
                   </div>
                   <div className="space-y-1">
