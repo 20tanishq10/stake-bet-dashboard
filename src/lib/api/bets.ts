@@ -11,7 +11,7 @@ export async function parseCrazyBet(prompt: string) {
       model: "gemini-2.5-flash",
       contents: `You are an expert sports betting parser for the FIFA World Cup.
 The user is submitting a text-based bet. 
-Your job is to extract the core conditions and estimate a reasonable "lock_at" time (in ISO 8601 format) before which the bet must be placed.
+Your job is to extract the core conditions, generate a catchy short "title" for this bet, estimate reasonable "odds" (e.g., 2.0) based on likelihood, and estimate a reasonable "lock_at" time (in ISO 8601 format) before which the bet must be placed.
 The current date and time is: ${now}.
 
 If the bet is about a specific match, estimate the kickoff time. If it is about the entire tournament (e.g., "who wins the World Cup"), estimate the start or end of the tournament. If you are unsure, provide null.
@@ -19,7 +19,9 @@ If the bet is about a specific match, estimate the kickoff time. If it is about 
 For example, if the prompt is: "Messi scores a hat trick and gets a yellow card"
 Return exactly:
 {
+  "title": "Messi Hat-Trick & Yellow",
   "conditions": ["Lionel Messi scores 3 or more goals", "Lionel Messi receives a yellow card"],
+  "odds": 8.5,
   "lock_at": "2026-06-30T15:00:00Z"
 }
 
@@ -37,7 +39,13 @@ Return ONLY valid JSON matching this structure. No markdown formatting, no code 
     }
     
     const parsed = JSON.parse(text);
-    return { success: true, conditions: parsed.conditions || [], lock_at: parsed.lock_at || null };
+    return { 
+      success: true, 
+      title: parsed.title || "Custom AI Bet",
+      odds: parsed.odds || 2.0,
+      conditions: parsed.conditions || [], 
+      lock_at: parsed.lock_at || null 
+    };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Gemini Parsing Error:", error);

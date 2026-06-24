@@ -1,5 +1,4 @@
 import { Badge } from "@/components/ui/badge";
-import { createClient } from "@/lib/supabase/server";
 import { CreateBetForm } from "./CreateBetForm";
 
 import { Suspense } from "react";
@@ -7,23 +6,17 @@ import { Suspense } from "react";
 export default async function CreateBetPage() {
   const supabase = await createClient();
 
-  const { data: matches } = await supabase
-    .from("matches")
-    .select("id, home_team, away_team, match_time")
-    .neq("status", "finished")
-    .order("match_time", { ascending: true });
-
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="space-y-6 max-w-2xl mx-auto pt-8">
       <div>
-        <Badge variant="outline">Phase 4</Badge>
-        <h1 className="mt-2 text-2xl font-semibold">Create New Bet</h1>
-        <p className="text-muted-foreground">
-          Deploy standard pool bets or use the Gemini AI to create crazy custom parlays.
+        <Badge variant="outline" className="mb-2">AI Betting Engine</Badge>
+        <h1 className="text-3xl font-bold tracking-tight">Create a Bet</h1>
+        <p className="text-muted-foreground mt-2">
+          Use the Gemini AI to instantly generate structured bets from plain English.
         </p>
       </div>
       <Suspense fallback={<div>Loading form...</div>}>
-        <CreateBetForm matches={matches ?? []} />
+        <CreateBetForm />
       </Suspense>
     </div>
   );

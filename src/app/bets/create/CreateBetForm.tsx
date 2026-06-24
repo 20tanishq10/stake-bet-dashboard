@@ -1,179 +1,120 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { parseCrazyBet, createBet } from "@/lib/api/bets";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Loader2, Sparkles } from "lucide-react";
 
-type Match = {
-  id: string;
-  home_team: string;
-  away_team: string;
-  match_time: string;
-};
-
-export function CreateBetForm({ matches }: { matches: Match[] }) {
+export function CreateBetForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [type, setType] = useState<"rule_based" | "llm_crazy">("rule_based");
-  const [matchId, setMatchId] = useState(searchParams?.get("matchId") || "");
-  const [title, setTitle] = useState("");
-  const [odds, setOdds] = useState("2.0");
-  const [crazyText, setCrazyText] = useState("");
-  const [ruleCondition, setRuleCondition] = useState("home_win");
+  const initialPrompt = searchParams?.get("prompt") || "";
+  
+  const [crazyText, setCrazyText] = useState(initialPrompt);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+
+  useEffect(() => {
+    // Wait for client mount
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!crazyText.trim()) return;
+
     setLoading(true);
     setError("");
+    setSuccessMsg("");
 
-    if (!title || !odds) {
-      setError("Please fill out all required fields.");
+    // 1. Ask AI to parse, generate title, and estimate odds
+    const res = await parseCrazyBet(crazyText);
+    if (!res.success) {
+      setError("AI Parsing Failed: " + res.error);
       setLoading(false);
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let ruleData: any = {};
-    let parsedLockAt: string | null = null;
+    const ruleData = {
+      raw_prompt: crazyText,
+      parsed_criteria: res.conditions,
+    };
 
-    if (type === "llm_crazy") {
-      if (!crazyText) {
-        setError("Please enter the crazy bet conditions.");
-        setLoading(false);
-        return;
-      }
-      const res = await parseCrazyBet(crazyText);
-      if (!res.success) {
-        setError("AI Parsing Failed: " + res.error);
-        setLoading(false);
-        return;
-      }
-      ruleData = {
-        raw_prompt: crazyText,
-        parsed_criteria: res.conditions,
-      };
-      parsedLockAt = res.lock_at || null;
-    } else {
-      ruleData = {
-        market: "match_winner",
-        condition: ruleCondition,
-      };
-    }
-
+    // 2. Create the bet directly with the AI-generated fields
     const betRes = await createBet({
-      title,
-      description: type === "llm_crazy" ? crazyText : `Match Winner: ${ruleCondition}`,
-      match_id: matchId ? parseInt(matchId) : null,
-      odds: parseFloat(odds),
-      rule_type: type,
+      title: res.title || "Custom AI Bet",
+      description: crazyText,
+      match_id: null,
+      odds: res.odds || 2.0,
+      rule_type: "llm_crazy",
       rule_data: ruleData,
-      lock_at: parsedLockAt,
+      lock_at: res.lock_at || null,
     });
 
     if (!betRes.success) {
       setError("Failed to create bet: " + betRes.error);
+      setLoading(false);
     } else {
-      router.push("/bets");
+      setSuccessMsg("Bet created successfully! Redirecting...");
+      setTimeout(() => {
+        router.push("/bets");
+      }, 1500);
     }
-    
-    setLoading(false);
   }
 
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="flex gap-4 mb-6 p-1 bg-muted rounded-lg">
-            <button
-              type="button"
-              className={`flex-1 py-2 text-sm font-medium rounded-md ${type === "rule_based" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-              onClick={() => setType("rule_based")}
-            >
-              Standard Bet
-            </button>
-            <button
-              type="button"
-              className={`flex-1 py-2 text-sm font-medium rounded-md ${type === "llm_crazy" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-              onClick={() => setType("llm_crazy")}
-            >
-              AI Crazy Bet
-            </button>
+    <Card className="border-primary/20 shadow-[0_0_40px_-10px_rgba(255,255,255,0.05)] bg-card/50 backdrop-blur">
+      <CardContent className="pt-8">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-3 text-center">
+            <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-full mb-2">
+              <Sparkles className="w-6 h-6 text-primary" />
+            </div>
+            <h2 className="text-xl font-semibold tracking-tight">AI Bet Creator</h2>
+            <p className="text-sm text-muted-foreground px-4">
+              Describe any crazy parlay or specific event you want to bet on. 
+              Our AI will automatically parse the conditions, calculate fair odds, and set the lock time.
+            </p>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Select Match</label>
-            <select 
-              value={matchId} 
-              onChange={(e) => setMatchId(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <option value="">-- General / Tournament Bet --</option>
-              {matches.map(m => (
-                <option key={m.id} value={m.id}>
-                  {m.home_team} vs {m.away_team} ({new Date(m.match_time).toLocaleDateString()})
-                </option>
-              ))}
-            </select>
+          <div className="relative group">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-accent/30 rounded-lg blur opacity-30 group-hover:opacity-60 transition duration-500"></div>
+            <textarea 
+              value={crazyText} 
+              onChange={(e) => setCrazyText(e.target.value)}
+              rows={4}
+              placeholder="e.g., Messi scores a hat-trick, Mbappe gets a red card, and Argentina wins by 2 goals..."
+              className="relative flex w-full rounded-lg border border-input/50 bg-background/80 backdrop-blur px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent transition-all resize-none"
+            />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Bet Title</label>
-              <input 
-                value={title} 
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Messi Masterclass"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              />
+          {error && (
+            <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-md text-center">
+              {error}
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Odds (e.g. 2.0)</label>
-              <input 
-                type="number"
-                step="0.01"
-                value={odds} 
-                onChange={(e) => setOdds(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              />
-            </div>
-          </div>
-
-          {type === "rule_based" ? (
-            <div className="space-y-2 pt-4 border-t">
-              <label className="text-sm font-medium">Match Winner Condition</label>
-              <select 
-                value={ruleCondition} 
-                onChange={(e) => setRuleCondition(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="home_win">Home Team Wins</option>
-                <option value="away_win">Away Team Wins</option>
-                <option value="draw">Draw</option>
-              </select>
-            </div>
-          ) : (
-            <div className="space-y-2 pt-4 border-t">
-              <label className="text-sm font-medium text-primary">Crazy Conditions (Powered by Gemini AI)</label>
-              <p className="text-xs text-muted-foreground mb-2">
-                Type anything! e.g., &quot;Messi scores a hat-trick, Mbappe gets a red card, and it rains.&quot;
-              </p>
-              <textarea 
-                value={crazyText} 
-                onChange={(e) => setCrazyText(e.target.value)}
-                rows={4}
-                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              />
+          )}
+          
+          {successMsg && (
+            <div className="p-3 bg-green-500/10 border-green-500/20 text-green-500 text-sm rounded-md text-center">
+              {successMsg}
             </div>
           )}
 
-          {error && <p className="text-sm text-destructive font-medium">{error}</p>}
-
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Creating Bet..." : "Publish Bet"}
+          <Button 
+            type="submit" 
+            className="w-full h-12 text-base font-medium bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_-5px_var(--primary)] transition-all" 
+            disabled={loading || !crazyText.trim()}
+          >
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Processing with AI...
+              </span>
+            ) : (
+              "Generate & Publish Bet"
+            )}
           </Button>
         </form>
       </CardContent>

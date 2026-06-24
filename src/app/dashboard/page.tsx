@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 import { MatchCardInteractive } from "@/components/dashboard/MatchCardInteractive";
+import { AIPromptBar } from "@/components/dashboard/AIPromptBar";
 
 type ActiveBetRow = {
   id: string;
@@ -83,11 +84,13 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <div>
         <Badge variant="outline">Phase 4 (Live)</Badge>
-        <h1 className="mt-2 text-2xl font-semibold">Dashboard</h1>
-        <p className="text-muted-foreground">
+        <h1 className="mt-2 text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground mt-2">
           Wallet, active bets, and recent group activity.
         </p>
       </div>
+
+      <AIPromptBar />
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>

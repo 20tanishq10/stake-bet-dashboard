@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ClientTime } from "@/components/ui/ClientTime";
 
 type MatchRow = {
   id: string;
@@ -53,7 +54,7 @@ export function MatchCardInteractive({ match }: { match: MatchRow }) {
               {match.status}
             </Badge>
             <span className="text-xs text-muted-foreground">
-              {new Date(match.match_time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+              <ClientTime timeString={match.match_time} />
             </span>
           </div>
           <div className="space-y-1">

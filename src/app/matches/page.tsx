@@ -14,6 +14,7 @@ import { PlayerStats } from "@/components/tournament/PlayerStats";
 import { KnockoutLadder } from "@/components/tournament/KnockoutLadder";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ClientTime } from "@/components/ui/ClientTime";
 
 type MatchRow = {
   id: string;
@@ -26,15 +27,7 @@ type MatchRow = {
   stage: string | null;
 };
 
-function formatKickoff(iso: string) {
-  return new Date(iso).toLocaleString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+// function formatKickoff removed in favor of ClientTime
 
 function scoreLabel(match: MatchRow) {
   if (match.home_score != null && match.away_score != null) {
@@ -162,7 +155,7 @@ function MatchSection({
                 {matches.map((match) => (
                   <tr key={match.id} className="border-t">
                     <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">
-                      {formatKickoff(match.match_time)}
+                      <ClientTime timeString={match.match_time} showDate />
                     </td>
                     <td className="px-3 py-2 font-medium">
                       {match.home_team} vs {match.away_team}
