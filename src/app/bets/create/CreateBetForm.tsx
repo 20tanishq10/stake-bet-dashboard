@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { parseCrazyBet, createBet } from "@/lib/api/bets";
+import { joinBet } from "@/lib/api/joinBet";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -13,6 +14,7 @@ export function CreateBetForm() {
   const initialPrompt = searchParams?.get("prompt") || "";
   
   const [crazyText, setCrazyText] = useState(initialPrompt);
+  const [stake, setStake] = useState("50");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -24,6 +26,12 @@ export function CreateBetForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!crazyText.trim()) return;
+    
+    const stakeAmount = parseFloat(stake);
+    if (isNaN(stakeAmount) || stakeAmount <= 0) {
+      setError("Please enter a valid stake amount.");
+      return;
+    }
 
     setLoading(true);
     setError("");
@@ -56,8 +64,17 @@ export function CreateBetForm() {
     if (!betRes.success) {
       setError("Failed to create bet: " + betRes.error);
       setLoading(false);
+      return;
+    } 
+
+    // 3. Immediately join the bet with the initial stake
+    const joinRes = await joinBet(betRes.bet.id, [{ userId: "self", stake: stakeAmount }]);
+    
+    if (!joinRes.success) {
+      setError("Bet created, but failed to join: " + joinRes.error);
+      setLoading(false);
     } else {
-      setSuccessMsg("Bet created successfully! Redirecting...");
+      setSuccessMsg("Bet created and joined successfully! Redirecting...");
       setTimeout(() => {
         router.push("/bets");
       }, 1500);
@@ -87,6 +104,17 @@ export function CreateBetForm() {
               rows={4}
               placeholder="e.g., Messi scores a hat-trick, Mbappe gets a red card, and Argentina wins by 2 goals..."
               className="relative flex w-full rounded-lg border border-input/50 bg-background/80 backdrop-blur px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent transition-all resize-none"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Initial Stake Amount ($)</label>
+            <input 
+              type="number"
+              step="1"
+              value={stake} 
+              onChange={(e) => setStake(e.target.value)}
+              className="flex h-12 w-full rounded-lg border border-input/50 bg-background/80 px-4 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent transition-all"
             />
           </div>
 

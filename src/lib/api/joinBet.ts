@@ -15,6 +15,13 @@ export async function joinBet(betId: string, allocations: { userId: string; stak
 
   const isBrokerOrHost = profile?.role === "host" || profile?.is_broker === true;
 
+  // Process 'self' alias
+  for (const alloc of allocations) {
+    if (alloc.userId === "self") {
+      alloc.userId = user.id;
+    }
+  }
+
   // Validate allocations
   if (!isBrokerOrHost) {
     if (allocations.length !== 1 || allocations[0].userId !== user.id) {
