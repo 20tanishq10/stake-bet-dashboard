@@ -15,6 +15,7 @@ export function CreateBetForm() {
   
   const [crazyText, setCrazyText] = useState(initialPrompt);
   const [stake, setStake] = useState("50");
+  const [odds, setOdds] = useState("2.0");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -30,6 +31,12 @@ export function CreateBetForm() {
     const stakeAmount = parseFloat(stake);
     if (isNaN(stakeAmount) || stakeAmount <= 0) {
       setError("Please enter a valid stake amount.");
+      return;
+    }
+
+    const oddsAmount = parseFloat(odds);
+    if (isNaN(oddsAmount) || oddsAmount <= 1.0) {
+      setError("Please enter valid odds (must be greater than 1.0).");
       return;
     }
 
@@ -50,12 +57,12 @@ export function CreateBetForm() {
       parsed_criteria: res.conditions,
     };
 
-    // 2. Create the bet directly with the AI-generated fields
+    // 2. Create the bet directly with the AI-generated fields (using deterministic odds)
     const betRes = await createBet({
       title: res.title || "Custom AI Bet",
       description: crazyText,
       match_id: null,
-      odds: res.odds || 2.0,
+      odds: oddsAmount,
       rule_type: "llm_crazy",
       rule_data: ruleData,
       lock_at: res.lock_at || null,
@@ -107,15 +114,28 @@ export function CreateBetForm() {
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Initial Stake Amount ($)</label>
-            <input 
-              type="number"
-              step="1"
-              value={stake} 
-              onChange={(e) => setStake(e.target.value)}
-              className="flex h-12 w-full rounded-lg border border-input/50 bg-background/80 px-4 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent transition-all"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Initial Stake Amount ($)</label>
+              <input 
+                type="number"
+                step="1"
+                value={stake} 
+                onChange={(e) => setStake(e.target.value)}
+                className="flex h-12 w-full rounded-lg border border-input/50 bg-background/80 px-4 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent transition-all"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Odds (e.g. 2.0)</label>
+              <input 
+                type="number"
+                step="0.01"
+                value={odds} 
+                onChange={(e) => setOdds(e.target.value)}
+                className="flex h-12 w-full rounded-lg border border-input/50 bg-background/80 px-4 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent transition-all"
+              />
+            </div>
           </div>
 
           {error && (
