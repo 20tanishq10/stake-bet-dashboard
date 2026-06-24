@@ -50,7 +50,7 @@ export default async function DashboardPage() {
       .limit(8),
   ]);
 
-  const liveActiveBets = ((activeBets ?? []) as ActiveBetRow[]).filter(
+  const liveActiveBets = ((activeBets ?? []) as unknown as ActiveBetRow[]).filter(
     (entry) => entry.bets && entry.bets.status !== "settled",
   );
 

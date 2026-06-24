@@ -104,52 +104,57 @@ export type Database = {
       };
       matches: {
         Row: {
-          id: number;
-          league_id: number;
-          season: number;
-          round: string | null;
-          home_team_id: number;
-          home_team_name: string;
-          away_team_id: number;
-          away_team_name: string;
-          kickoff_at: string;
+          id: string;
+          home_team: string;
+          away_team: string;
+          match_time: string;
+          stage: string;
+          home_score: number | null;
+          away_score: number | null;
           status: string;
-          home_goals: number | null;
-          away_goals: number | null;
-          raw_payload: Json;
-          synced_at: string;
+          api_football_id: string | null;
+          api_football_data: Json | null;
+          updated_at: string;
         };
         Insert: {
-          id: number;
-          league_id: number;
-          season: number;
-          round?: string | null;
-          home_team_id: number;
-          home_team_name: string;
-          away_team_id: number;
-          away_team_name: string;
-          kickoff_at: string;
+          id: string;
+          home_team: string;
+          away_team: string;
+          match_time: string;
+          stage: string;
+          home_score?: number | null;
+          away_score?: number | null;
           status: string;
-          home_goals?: number | null;
-          away_goals?: number | null;
-          raw_payload?: Json;
-          synced_at?: string;
+          api_football_id?: string | null;
+          api_football_data?: Json | null;
+          updated_at?: string;
         };
         Update: {
-          id?: number;
-          league_id?: number;
-          season?: number;
-          round?: string | null;
-          home_team_id?: number;
-          home_team_name?: string;
-          away_team_id?: number;
-          away_team_name?: string;
-          kickoff_at?: string;
+          id?: string;
+          home_team?: string;
+          away_team?: string;
+          match_time?: string;
+          stage?: string;
+          home_score?: number | null;
+          away_score?: number | null;
           status?: string;
-          home_goals?: number | null;
-          away_goals?: number | null;
-          raw_payload?: Json;
-          synced_at?: string;
+          api_football_id?: string | null;
+          api_football_data?: Json | null;
+          updated_at?: string;
+        };
+      };
+      api_rate_limits: {
+        Row: {
+          date: string;
+          request_count: number;
+        };
+        Insert: {
+          date: string;
+          request_count?: number;
+        };
+        Update: {
+          date?: string;
+          request_count?: number;
         };
       };
       teams: {

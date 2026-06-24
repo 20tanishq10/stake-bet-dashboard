@@ -21,6 +21,7 @@ export async function GET(request: Request) {
     const games = data.games || [];
 
     // Transform API response to our database schema
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const matchesToInsert = games.map((m: any) => ({
       id: String(m.id),
       home_team: m.home_team_name_en || m.home_team_label || "Unknown",

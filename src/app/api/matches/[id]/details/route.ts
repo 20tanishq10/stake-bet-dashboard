@@ -100,7 +100,7 @@ export async function GET(
     // In a production app, we would use a Postgres function to safely increment
     await adminClient
       .from("api_rate_limits")
-      .update({ request_count: rateLimitRow.request_count + 1 })
+      .update({ request_count: rateLimitRow!.request_count + 1 })
       .eq("date", today);
 
     await adminClient
