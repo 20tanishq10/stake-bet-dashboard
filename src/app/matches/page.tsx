@@ -6,7 +6,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createClient } from "@/lib/supabase/server";
+import { getOpenApiGroups, getOpenApiTeams, getPlayerStats } from "@/lib/api/tournament";
+import { GroupStandings } from "@/components/tournament/GroupStandings";
+import { PlayerStats } from "@/components/tournament/PlayerStats";
 
 type MatchRow = {
   id: string;
@@ -44,6 +48,16 @@ export default async function MatchesPage() {
     .select("id, home_team, away_team, match_time, status, home_score, away_score, stage")
     .order("match_time", { ascending: true });
 
+  // Fetch all tournament data concurrently
+  const [groups, teams, topscorers, assists, yellowcards, redcards] = await Promise.all([
+    getOpenApiGroups(),
+    getOpenApiTeams(),
+    getPlayerStats("topscorers"),
+    getPlayerStats("topassists"),
+    getPlayerStats("topyellowcards"),
+    getPlayerStats("topredcards"),
+  ]);
+
   const rows = (matches ?? []) as MatchRow[];
   const upcoming = rows.filter((m) => !["finished"].includes(m.status.toLowerCase()));
   const finished = rows.filter((m) => ["finished"].includes(m.status.toLowerCase()));
@@ -52,33 +66,56 @@ export default async function MatchesPage() {
     <div className="space-y-6">
       <div>
         <Badge variant="outline">Phase 4 (Hybrid API)</Badge>
-        <h1 className="mt-2 text-2xl font-semibold">World Cup Matches</h1>
+        <h1 className="mt-2 text-2xl font-semibold">World Cup Tournament</h1>
         <p className="text-muted-foreground">
-          Fixtures cached from Open API and API-Football.
+          Fixtures, Standings, and Player Stats powered by Hybrid API cache.
         </p>
       </div>
 
-      {error ? (
-        <Card>
-          <CardContent className="pt-6 text-sm text-destructive">
-            Could not load matches: {error.message}
-          </CardContent>
-        </Card>
-      ) : rows.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">No fixtures yet</CardTitle>
-            <CardDescription>
-              Run the sync cron once to populate the database, then refresh this page.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      ) : (
-        <>
-          <MatchSection title="Upcoming" description="Scheduled and in-progress fixtures." matches={upcoming} />
-          <MatchSection title="Results" description="Finished matches with scores." matches={finished.reverse()} />
-        </>
-      )}
+      <Tabs defaultValue="fixtures" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="fixtures">Fixtures & Results</TabsTrigger>
+          <TabsTrigger value="standings">Group Stage</TabsTrigger>
+          <TabsTrigger value="stats">Player Stats</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="fixtures" className="space-y-6">
+          {error ? (
+            <Card>
+              <CardContent className="pt-6 text-sm text-destructive">
+                Could not load matches: {error.message}
+              </CardContent>
+            </Card>
+          ) : rows.length === 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">No fixtures yet</CardTitle>
+                <CardDescription>
+                  Run the sync cron once to populate the database, then refresh this page.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          ) : (
+            <>
+              <MatchSection title="Upcoming" description="Scheduled and in-progress fixtures." matches={upcoming} />
+              <MatchSection title="Results" description="Finished matches with scores." matches={finished.reverse()} />
+            </>
+          )}
+        </TabsContent>
+
+        <TabsContent value="standings">
+          <GroupStandings groups={groups} teams={teams} />
+        </TabsContent>
+
+        <TabsContent value="stats">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <PlayerStats title="Top Scorers" stats={topscorers} type="goals" />
+            <PlayerStats title="Top Assists" stats={assists} type="assists" />
+            <PlayerStats title="Yellow Cards" stats={yellowcards} type="yellow" />
+            <PlayerStats title="Red Cards" stats={redcards} type="red" />
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
