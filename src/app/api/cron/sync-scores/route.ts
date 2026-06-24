@@ -47,9 +47,24 @@ export async function GET(request: Request) {
       }
     }
 
+    // 4. Trigger AI Referee Settlement for any finished matches
+    try {
+      const protocol = request.headers.get("x-forwarded-proto") || "http";
+      const host = request.headers.get("host");
+      const settleUrl = `${protocol}://${host}/api/cron/settle-bets`;
+      
+      await fetch(settleUrl, {
+        headers: {
+          Authorization: `Bearer ${process.env.CRON_SECRET}`
+        }
+      });
+    } catch (settleError) {
+      console.error("Failed to trigger auto-settlement:", settleError);
+    }
+
     return NextResponse.json({
       success: true,
-      message: `Successfully synced scores for ${updateCount} matches.`,
+      message: `Successfully synced scores for ${updateCount} matches and triggered AI referee.`,
     });
   } catch (error) {
     console.error("Sync scores error:", error);
