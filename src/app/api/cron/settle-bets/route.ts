@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { adminClient } from "@/lib/supabase/admin";
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
 export async function GET(request: Request) {
   const authHeader = request.headers.get("Authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -55,6 +53,7 @@ Return strictly JSON format:
 { "result": "win" | "lose" | "disputed", "reasoning": "your reasoning..." }`;
 
         try {
+          const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "dummy_key_for_build" });
           const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
             contents: prompt,

@@ -3,10 +3,9 @@
 import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@/lib/supabase/server";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
 export async function parseCrazyBet(prompt: string) {
   try {
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "dummy_key_for_build" });
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: `You are an expert sports betting parser for the FIFA World Cup.
