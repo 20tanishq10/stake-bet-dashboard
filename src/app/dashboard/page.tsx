@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
+import { MatchCardInteractive } from "@/components/dashboard/MatchCardInteractive";
 
 type ActiveBetRow = {
   id: string;
@@ -123,26 +124,7 @@ export default async function DashboardPage() {
           ) : (
             <div className="grid gap-4 md:grid-cols-3">
               {displayMatches.map((match) => (
-                <div key={match.id} className="rounded-lg border p-3 flex flex-col justify-between shadow-sm bg-muted/20">
-                  <div className="flex justify-between items-center mb-3">
-                    <Badge variant={match.status === "finished" ? "secondary" : "default"} className="text-[10px] px-1 py-0">
-                      {match.status}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(match.match_time).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' })} IST
-                    </span>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex justify-between items-center font-medium">
-                      <span>{match.home_team || "TBD"}</span>
-                      <span className="tabular-nums">{match.home_score ?? "-"}</span>
-                    </div>
-                    <div className="flex justify-between items-center font-medium">
-                      <span>{match.away_team || "TBD"}</span>
-                      <span className="tabular-nums">{match.away_score ?? "-"}</span>
-                    </div>
-                  </div>
-                </div>
+                <MatchCardInteractive key={match.id} match={match} />
               ))}
             </div>
           )}
