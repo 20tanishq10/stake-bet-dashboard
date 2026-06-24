@@ -11,6 +11,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getOpenApiGroups, getOpenApiTeams, getPlayerStats } from "@/lib/api/tournament";
 import { GroupStandings } from "@/components/tournament/GroupStandings";
 import { PlayerStats } from "@/components/tournament/PlayerStats";
+import { KnockoutLadder } from "@/components/tournament/KnockoutLadder";
 
 type MatchRow = {
   id: string;
@@ -73,9 +74,10 @@ export default async function MatchesPage() {
       </div>
 
       <Tabs defaultValue="fixtures" className="space-y-6">
-        <TabsList>
+        <TabsList className="flex flex-wrap h-auto">
           <TabsTrigger value="fixtures">Fixtures & Results</TabsTrigger>
           <TabsTrigger value="standings">Group Stage</TabsTrigger>
+          <TabsTrigger value="knockout">Knockout Stage</TabsTrigger>
           <TabsTrigger value="stats">Player Stats</TabsTrigger>
         </TabsList>
 
@@ -105,6 +107,10 @@ export default async function MatchesPage() {
 
         <TabsContent value="standings">
           <GroupStandings groups={groups} teams={teams} />
+        </TabsContent>
+
+        <TabsContent value="knockout">
+          <KnockoutLadder matches={rows} />
         </TabsContent>
 
         <TabsContent value="stats">

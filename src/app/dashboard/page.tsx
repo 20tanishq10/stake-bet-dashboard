@@ -29,6 +29,16 @@ type ProfileRow = {
   wallet_balance: number | null;
 };
 
+type MatchRow = {
+  id: string;
+  home_team: string;
+  away_team: string;
+  match_time: string;
+  status: string;
+  home_score: number | null;
+  away_score: number | null;
+};
+
 export default async function DashboardPage() {
   const supabase = await createClient();
 
@@ -36,7 +46,7 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: profile }, { data: activeBets }, { data: activity }] = await Promise.all([
+  const [{ data: profile }, { data: activeBets }, { data: activity }, { data: dashboardMatches }] = await Promise.all([
     supabase.from("profiles").select("display_name, wallet_balance").eq("id", user?.id ?? "").maybeSingle(),
     supabase
       .from("bet_participations")
@@ -48,6 +58,10 @@ export default async function DashboardPage() {
       .select("id, event_type, created_at, metadata")
       .order("created_at", { ascending: false })
       .limit(8),
+    supabase
+      .from("matches")
+      .select("id, home_team, away_team, match_time, status, home_score, away_score")
+      .order("match_time", { ascending: true }),
   ]);
 
   const liveActiveBets = ((activeBets ?? []) as unknown as ActiveBetRow[]).filter(
@@ -57,10 +71,17 @@ export default async function DashboardPage() {
   const recentActivity = (activity ?? []) as ActivityRow[];
   const typedProfile = profile as ProfileRow | null;
 
+  const matches = (dashboardMatches ?? []) as MatchRow[];
+  const liveMatches = matches.filter((m) => m.status.toLowerCase() === "in-progress" || m.status.toLowerCase().includes("h"));
+  const upcomingMatches = matches.filter((m) => !["finished"].includes(m.status.toLowerCase())).slice(0, 3);
+  
+  const displayMatches = liveMatches.length > 0 ? liveMatches : upcomingMatches;
+  const matchTitle = liveMatches.length > 0 ? "Live Matches" : "Upcoming Matches";
+
   return (
     <div className="space-y-6">
       <div>
-        <Badge variant="outline">Phase 3</Badge>
+        <Badge variant="outline">Phase 4 (Live)</Badge>
         <h1 className="mt-2 text-2xl font-semibold">Dashboard</h1>
         <p className="text-muted-foreground">
           Wallet, active bets, and recent group activity.
@@ -87,6 +108,47 @@ export default async function DashboardPage() {
           </CardHeader>
         </Card>
       </div>
+
+      {/* Live / Upcoming Matches Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            {liveMatches.length > 0 && <span className="flex h-2 w-2 rounded-full bg-red-600 animate-pulse"></span>}
+            {matchTitle}
+          </CardTitle>
+          <CardDescription>World Cup 2026</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {displayMatches.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No matches found.</p>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-3">
+              {displayMatches.map((match) => (
+                <div key={match.id} className="rounded-lg border p-3 flex flex-col justify-between shadow-sm bg-muted/20">
+                  <div className="flex justify-between items-center mb-3">
+                    <Badge variant={liveMatches.length > 0 ? "destructive" : "secondary"} className="text-[10px] px-1 py-0">
+                      {match.status}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(match.match_time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center font-medium">
+                      <span>{match.home_team || "TBD"}</span>
+                      <span className="tabular-nums">{match.home_score ?? "-"}</span>
+                    </div>
+                    <div className="flex justify-between items-center font-medium">
+                      <span>{match.away_team || "TBD"}</span>
+                      <span className="tabular-nums">{match.away_score ?? "-"}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
