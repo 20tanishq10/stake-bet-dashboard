@@ -87,6 +87,45 @@ Return strictly JSON format:
         settled_at: new Date().toISOString(),
       }).eq("id", bet.id);
 
+      // Handle Payouts if the bet is fully settled
+      if (finalStatus === "settled") {
+        const { data: participations } = await adminClient.from("bet_participations").select("*").eq("bet_id", bet.id);
+        
+        if (participations) {
+          if (netResult === 1) { // Win
+            const odds = rule.odds || 1.0;
+            for (const p of participations) {
+              const payout = p.stake_amount * odds;
+              
+              // 1. Update participation with payout_amount
+              await adminClient.from("bet_participations").update({ payout_amount: payout }).eq("id", p.id);
+
+              // 2. Fetch user profile
+              const { data: userProfile } = await adminClient.from("profiles").select("wallet_balance").eq("id", p.user_id).single();
+              const newBalance = (userProfile?.wallet_balance || 0) + payout;
+
+              // 3. Update wallet
+              await adminClient.from("profiles").update({ wallet_balance: newBalance }).eq("id", p.user_id);
+
+              // 4. Insert into wallet_ledger
+              await adminClient.from("wallet_ledger").insert({
+                user_id: p.user_id,
+                entry_type: "payout",
+                amount: payout,
+                balance_after: newBalance,
+                bet_id: bet.id,
+                created_by: bet.created_by,
+                note: "AI Bet Settlement Payout"
+              });
+            }
+          } else if (netResult === -1) { // Loss
+            for (const p of participations) {
+              await adminClient.from("bet_participations").update({ payout_amount: 0 }).eq("id", p.id);
+            }
+          }
+        }
+      }
+
       settledCount++;
     }
 
