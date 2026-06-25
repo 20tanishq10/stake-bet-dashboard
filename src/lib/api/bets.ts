@@ -2,7 +2,7 @@
 
 import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@/lib/supabase/server";
-import { supabaseAdmin } from "@/lib/supabase/admin";
+import { adminClient } from "@/lib/supabase/admin";
 
 export async function parseCrazyBet(prompt: string) {
   try {
@@ -114,7 +114,7 @@ export async function createBet(formData: {
   const initialStatus = isBrokerOrHost ? "open" : "draft";
 
   // Use admin client to bypass RLS for inserts since the policy only allows hosts
-  const { data, error } = await supabaseAdmin.from("bets").insert({
+  const { data, error } = await adminClient.from("bets").insert({
     created_by: user.id,
     match_id: formData.match_id,
     title: formData.title,

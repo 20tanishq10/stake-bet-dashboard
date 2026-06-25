@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { adminClient } from "@/lib/supabase/admin";
 
 export async function joinBet(betId: string, allocations: { userId: string; stake: number }[]) {
   const supabase = await createClient();
@@ -33,17 +34,19 @@ export async function joinBet(betId: string, allocations: { userId: string; stak
   const totalStake = allocations.reduce((sum, a) => sum + a.stake, 0);
   if (totalStake <= 0) return { success: false, error: "Invalid stake amount" };
 
-  const { data: bet } = await supabase.from("bets").select("status").eq("id", betId).single();
-  if (bet?.status !== "open") return { success: false, error: "Bet is not open" };
+  // Use admin client to read status in case of draft bets
+  const { data: bet } = await adminClient.from("bets").select("status").eq("id", betId).single();
+  // We allow joining 'open' or 'draft' bets (so the user who created it can immediately join their own draft)
+  if (bet?.status !== "open" && bet?.status !== "draft") return { success: false, error: "Bet is not open" };
 
   // Note: Real implementation would run a Postgres function/transaction 
   // to safely deduct wallets and insert participations.
-  // For this phase, we do it sequentially.
+  // For this phase, we do it sequentially using adminClient to bypass RLS.
   
   for (const alloc of allocations) {
     if (alloc.stake <= 0) continue;
 
-    const { data: userProfile } = await supabase
+    const { data: userProfile } = await adminClient
       .from("profiles")
       .select("wallet_balance, is_interested")
       .eq("id", alloc.userId)
@@ -59,12 +62,14 @@ export async function joinBet(betId: string, allocations: { userId: string; stak
     }
 
     // Deduct wallet
-    await supabase.from("profiles").update({ 
+    const { error: walletErr } = await adminClient.from("profiles").update({ 
       wallet_balance: (userProfile.wallet_balance || 0) - alloc.stake 
     }).eq("id", alloc.userId);
 
+    if (walletErr) return { success: false, error: walletErr.message };
+
     // Insert ledger
-    await supabase.from("wallet_ledger").insert({
+    const { error: ledgerErr } = await adminClient.from("wallet_ledger").insert({
       user_id: alloc.userId,
       entry_type: "stake_lock",
       amount: -alloc.stake,
@@ -73,13 +78,17 @@ export async function joinBet(betId: string, allocations: { userId: string; stak
       created_by: user.id
     });
 
+    if (ledgerErr) console.error("Ledger Insert Error:", ledgerErr);
+
     // Insert participation
-    await supabase.from("bet_participations").insert({
+    const { error: partErr } = await adminClient.from("bet_participations").insert({
       bet_id: betId,
       user_id: alloc.userId,
       stake_amount: alloc.stake,
       share_pct: 0 // Will be recalculated later in a pooling model
     });
+
+    if (partErr) console.error("Participation Insert Error:", partErr);
   }
 
   return { success: true };
