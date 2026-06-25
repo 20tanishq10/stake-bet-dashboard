@@ -5,6 +5,14 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function parseCrazyBet(prompt: string) {
   try {
+    const supabase = await createClient();
+    const { data: activeMatches } = await supabase
+      .from("matches")
+      .select("id, home_team, away_team")
+      .neq("status", "finished");
+      
+    const matchContext = activeMatches?.map(m => `${m.id}: ${m.home_team} vs ${m.away_team}`).join("\n") || "No active matches.";
+
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "dummy_key_for_build" });
     const now = new Date().toISOString();
     const response = await ai.models.generateContent({
@@ -14,14 +22,20 @@ The user is submitting a text-based bet.
 Your job is to extract the core conditions, generate a catchy short "title" for this bet, estimate reasonable "odds" (e.g., 2.0) based on likelihood, and estimate a reasonable "lock_at" time (in ISO 8601 format) before which the bet must be placed.
 The current date and time is: ${now}.
 
-If the bet is about a specific match, estimate the kickoff time. If it is about the entire tournament (e.g., "who wins the World Cup"), estimate the start or end of the tournament. If you are unsure, provide null.
+If the bet is about a specific match, estimate the kickoff time. If it is about the entire tournament (e.g., "who wins the World Cup"), estimate the start or end of the tournament. 
 
-For example, if the prompt is: "Messi scores a hat trick and gets a yellow card"
+Here are the upcoming matches (ID: Home vs Away):
+${matchContext}
+
+If the user's bet clearly relates to one of these matches, return its EXACT integer ID in the "match_id" field. If you are unsure or it's a general tournament bet, provide null for "match_id".
+
+For example, if the prompt is: "Messi scores a hat trick against France" and match ID 5 is Argentina vs France:
 Return exactly:
 {
-  "title": "Messi Hat-Trick & Yellow",
-  "conditions": ["Lionel Messi scores 3 or more goals", "Lionel Messi receives a yellow card"],
+  "title": "Messi Hat-Trick vs France",
+  "conditions": ["Lionel Messi scores 3 or more goals against France"],
   "odds": 8.5,
+  "match_id": 5,
   "lock_at": "2026-06-30T15:00:00Z"
 }
 
@@ -43,6 +57,7 @@ Return ONLY valid JSON matching this structure. No markdown formatting, no code 
       success: true, 
       title: parsed.title || "Custom AI Bet",
       odds: parsed.odds || 2.0,
+      match_id: parsed.match_id || null,
       conditions: parsed.conditions || [], 
       lock_at: parsed.lock_at || null 
     };

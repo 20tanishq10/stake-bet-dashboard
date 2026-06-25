@@ -61,7 +61,7 @@ export function CreateBetForm() {
     const betRes = await createBet({
       title: res.title || "Custom AI Bet",
       description: crazyText,
-      match_id: null,
+      match_id: res.match_id || null,
       odds: oddsAmount,
       rule_type: "llm_crazy",
       rule_data: ruleData,
