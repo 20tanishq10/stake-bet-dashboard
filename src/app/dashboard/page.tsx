@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { createClient } from "@/lib/supabase/server";
 import { MatchCardInteractive } from "@/components/dashboard/MatchCardInteractive";
 import { AIPromptBar } from "@/components/dashboard/AIPromptBar";
+import { HoverActiveBets } from "@/components/dashboard/HoverActiveBets";
 
 type ActiveBetRow = {
   id: string;
@@ -16,6 +17,8 @@ type ActiveBetRow = {
     status: string;
     lock_at: string | null;
     net_result: number | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rule?: any;
   } | null;
 };
 
@@ -52,7 +55,7 @@ export default async function DashboardPage() {
     supabase.from("profiles").select("display_name, wallet_balance").eq("id", user?.id ?? "").maybeSingle(),
     supabase
       .from("bet_participations")
-      .select("id, stake_amount, share_pct, payout_amount, joined_at, bets(id, title, status, lock_at, net_result)")
+      .select("id, stake_amount, share_pct, payout_amount, joined_at, bets(id, title, status, lock_at, net_result, rule)")
       .eq("user_id", user?.id ?? "")
       .order("joined_at", { ascending: false }),
     supabase
@@ -66,9 +69,30 @@ export default async function DashboardPage() {
       .order("match_time", { ascending: true }),
   ]);
 
-  const liveActiveBets = ((activeBets ?? []) as unknown as ActiveBetRow[]).filter(
+  const allParticipations = ((activeBets ?? []) as unknown as ActiveBetRow[]);
+  const liveActiveBets = allParticipations.filter(
     (entry) => entry.bets && entry.bets.status !== "settled",
   );
+
+  const settledBets = allParticipations.filter(
+    (entry) => entry.bets && entry.bets.status === "settled",
+  );
+
+  const totalSettled = settledBets.length;
+  let wins = 0;
+  let totalPnL = 0;
+
+  settledBets.forEach(bet => {
+    if (bet.bets?.net_result === 1) {
+      wins++;
+      const odds = bet.bets.rule?.odds || 1;
+      totalPnL += bet.stake_amount * (odds - 1);
+    } else if (bet.bets?.net_result === -1) {
+      totalPnL -= bet.stake_amount;
+    }
+  });
+
+  const winRatio = totalSettled > 0 ? (wins / totalSettled) * 100 : 0;
 
   const recentActivity = (activity ?? []) as ActivityRow[];
   const typedProfile = profile as ProfileRow | null;
@@ -92,19 +116,31 @@ export default async function DashboardPage() {
 
       <AIPromptBar />
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Wallet balance</CardDescription>
             <CardTitle className="text-2xl">{typedProfile?.wallet_balance?.toFixed(2) ?? "0.00"}</CardTitle>
           </CardHeader>
         </Card>
+
+        {/* HoverActiveBets handles the Active bets stat card */}
+        <HoverActiveBets liveActiveBets={liveActiveBets} />
+
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Active bets</CardDescription>
-            <CardTitle className="text-2xl">{liveActiveBets.length}</CardTitle>
+            <CardDescription>Performance Matrix</CardDescription>
+            <CardTitle className="text-2xl flex items-center gap-2">
+              <span className={totalPnL >= 0 ? "text-green-500" : "text-destructive"}>
+                {totalPnL >= 0 ? "+" : "-"}${Math.abs(totalPnL).toFixed(2)}
+              </span>
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-1 font-medium">
+              Win Ratio: {winRatio.toFixed(1)}% ({wins}/{totalSettled})
+            </p>
           </CardHeader>
         </Card>
+
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Member</CardDescription>
@@ -137,35 +173,6 @@ export default async function DashboardPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Active bets</CardTitle>
-            <CardDescription>Your open and pending positions.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {liveActiveBets.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No active bets yet.</p>
-            ) : (
-              liveActiveBets.map((entry) => (
-                <div key={entry.id} className="rounded-lg border p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="font-medium">{entry.bets?.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Joined {new Date(entry.joined_at).toLocaleString()}
-                      </p>
-                    </div>
-                    <Badge variant="secondary">{entry.bets?.status}</Badge>
-                  </div>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Stake {entry.stake_amount.toFixed(2)} · Share {Math.round(entry.share_pct * 100)}%
-                  </p>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
             <CardTitle className="text-base">Recent activity</CardTitle>
             <CardDescription>Latest wallet and bet events across the group.</CardDescription>
           </CardHeader>
@@ -186,3 +193,4 @@ export default async function DashboardPage() {
     </div>
   );
 }
+

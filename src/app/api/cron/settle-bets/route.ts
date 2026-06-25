@@ -91,8 +91,9 @@ Return strictly JSON format:
     }
 
     return NextResponse.json({ success: true, message: `Processed ${settledCount} bets.` });
-  } catch (error) {
-    console.error("Settlement error:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.error("Settlement error details:", error?.message, error?.stack, error);
+    return new NextResponse(`Internal Server Error: ${error?.message}`, { status: 500 });
   }
 }

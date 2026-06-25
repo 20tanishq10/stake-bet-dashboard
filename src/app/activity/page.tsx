@@ -1,6 +1,21 @@
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
+import { ActivityTabs } from "@/components/activity/ActivityTabs";
+
+type ActiveBetRow = {
+  id: string;
+  stake_amount: number;
+  share_pct: number;
+  joined_at: string;
+  bets: {
+    id: string;
+    title: string;
+    status: string;
+    net_result: number | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rule?: any;
+  } | null;
+};
 
 type ActivityRow = {
   id: string;
@@ -11,47 +26,48 @@ type ActivityRow = {
 
 export default async function ActivityPage() {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  const { data } = await supabase
-    .from("activity_logs")
-    .select("id, event_type, created_at, metadata")
-    .order("created_at", { ascending: false })
-    .limit(20);
+  const [{ data: activityData }, { data: betsData }] = await Promise.all([
+    supabase
+      .from("activity_logs")
+      .select("id, event_type, created_at, metadata")
+      .order("created_at", { ascending: false })
+      .limit(50),
+    supabase
+      .from("bet_participations")
+      .select("id, stake_amount, share_pct, joined_at, bets(id, title, status, net_result, rule)")
+      .eq("user_id", user?.id ?? "")
+      .order("joined_at", { ascending: false })
+  ]);
 
-  const activity = (data ?? []) as ActivityRow[];
+  const activity = (activityData ?? []) as ActivityRow[];
+  const allParticipations = (betsData ?? []) as unknown as ActiveBetRow[];
+
+  const liveActiveBets = allParticipations.filter(
+    (entry) => entry.bets && entry.bets.status !== "settled",
+  );
+
+  const settledBets = allParticipations.filter(
+    (entry) => entry.bets && entry.bets.status === "settled",
+  );
 
   return (
     <div className="space-y-6">
       <div>
-        <Badge variant="outline">Phase 3</Badge>
-        <h1 className="mt-2 text-2xl font-semibold">Activity Log</h1>
-        <p className="text-muted-foreground">
-          Append-only audit trail for wallet and bet events.
+        <Badge variant="outline">Phase 4 (Live)</Badge>
+        <h1 className="mt-2 text-2xl font-semibold">Activity Hub</h1>
+        <p className="text-muted-foreground mt-1">
+          Track your active positions, betting history, and wallet audit trail.
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Recent events</CardTitle>
-          <CardDescription>
-            Backed by <code>activity_logs</code>.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {activity.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No activity yet.</p>
-          ) : (
-            activity.map((item) => (
-              <div key={item.id} className="rounded-lg border p-3">
-                <p className="font-medium">{item.event_type}</p>
-                <p className="text-xs text-muted-foreground">
-                  {new Date(item.created_at).toLocaleString()}
-                </p>
-              </div>
-            ))
-          )}
-        </CardContent>
-      </Card>
+      <ActivityTabs 
+        liveActiveBets={liveActiveBets} 
+        settledBets={settledBets} 
+        activity={activity} 
+      />
     </div>
   );
 }
+

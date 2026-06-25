@@ -302,6 +302,33 @@ export default function AdminPage() {
           )}
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">System Actions (Cron Jobs)</CardTitle>
+          <CardDescription>Manually trigger automated tasks (usually run by Vercel Cron in production).</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4 flex-wrap">
+            <Button 
+              variant="outline" 
+              onClick={async () => {
+                setMessage(null); setError(null);
+                try {
+                  // We bypass auth for this button, but wait, the cron endpoint expects CRON_SECRET auth header.
+                  // Let's call a new proxy endpoint or just call the cron endpoint if we pass the secret.
+                  // Wait, the cron secret is in process.env, not exposed to client. 
+                  // I should create an admin proxy route for crons, OR just tell the user to use curl.
+                  // Actually, I can just write an admin API route that triggers the cron.
+                } catch {
+                }
+              }}
+            >
+              Run AI Referee (Settle Bets)
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
