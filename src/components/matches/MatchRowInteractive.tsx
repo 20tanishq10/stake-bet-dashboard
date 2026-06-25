@@ -137,16 +137,18 @@ export function MatchRowInteractive({ match }: { match: MatchRow }) {
             )}
           </div>
           
-          <div className="pt-4 flex justify-center border-t border-border/50">
-            <Link 
-              href={`/bets/create?matchId=${match.id}&prompt=${encodeURIComponent(`${match.home_team || "TBD"} vs ${match.away_team || "TBD"}: `)}`} 
-              className="w-full"
-            >
-              <Button className="w-full font-bold">
-                + Place Bet on this Match
-              </Button>
-            </Link>
-          </div>
+          {match.status !== "finished" && (
+            <div className="pt-4 flex justify-center border-t border-border/50">
+              <Link 
+                href={`/bets/create?matchId=${match.id}&prompt=${encodeURIComponent(`${match.home_team || "TBD"} vs ${match.away_team || "TBD"}: `)}`} 
+                className="w-full"
+              >
+                <Button className="w-full font-bold">
+                  + Place Bet on this Match
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

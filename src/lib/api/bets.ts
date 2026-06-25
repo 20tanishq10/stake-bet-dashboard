@@ -19,7 +19,14 @@ export async function parseCrazyBet(prompt: string) {
       model: "gemini-2.5-flash",
       contents: `You are an expert sports betting parser for the FIFA World Cup.
 The user is submitting a text-based bet. 
-Your job is to extract the core conditions, generate a catchy short "title" for this bet, estimate reasonable "odds" (e.g., 2.0) based on likelihood, and estimate a reasonable "lock_at" time (in ISO 8601 format) before which the bet must be placed.
+
+CRITICAL RULE: If the user tries to place a bet on an event that has already occurred (based on the current date/time), or an event that is completely irrelevant to football/the tournament, you MUST decline it. In this case, return EXACTLY this JSON and nothing else:
+{
+  "declined": true,
+  "decline_reason": "Brief explanation of why it was declined (e.g. 'This match has already finished' or 'This is not a football bet')."
+}
+
+Otherwise, your job is to extract the core conditions, generate a catchy short "title" for this bet, estimate reasonable "odds" (e.g., 2.0) based on likelihood, and estimate a reasonable "lock_at" time (in ISO 8601 format) before which the bet must be placed.
 The current date and time is: ${now}.
 
 If the bet is about a specific match, estimate the kickoff time. If it is about the entire tournament (e.g., "who wins the World Cup"), estimate the start or end of the tournament. 
@@ -53,6 +60,11 @@ Return ONLY valid JSON matching this structure. No markdown formatting, no code 
     }
     
     const parsed = JSON.parse(text);
+
+    if (parsed.declined) {
+      return { success: false, error: parsed.decline_reason || "Bet declined by AI checker." };
+    }
+
     return { 
       success: true, 
       title: parsed.title || "Custom AI Bet",

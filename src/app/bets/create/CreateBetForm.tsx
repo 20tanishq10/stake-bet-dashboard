@@ -47,7 +47,7 @@ export function CreateBetForm() {
     // 1. Ask AI to parse, generate title, and estimate odds
     const res = await parseCrazyBet(crazyText);
     if (!res.success) {
-      setError("AI Parsing Failed: " + res.error);
+      setError(res.error || "AI Parsing Failed");
       setLoading(false);
       return;
     }
