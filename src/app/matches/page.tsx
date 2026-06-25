@@ -12,9 +12,7 @@ import { getOpenApiGroups, getOpenApiTeams, getPlayerStats } from "@/lib/api/tou
 import { GroupStandings } from "@/components/tournament/GroupStandings";
 import { PlayerStats } from "@/components/tournament/PlayerStats";
 import { KnockoutLadder } from "@/components/tournament/KnockoutLadder";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ClientTime } from "@/components/ui/ClientTime";
+import { MatchRowInteractive } from "@/components/matches/MatchRowInteractive";
 
 type MatchRow = {
   id: string;
@@ -29,12 +27,7 @@ type MatchRow = {
 
 // function formatKickoff removed in favor of ClientTime
 
-function scoreLabel(match: MatchRow) {
-  if (match.home_score != null && match.away_score != null) {
-    return `${match.home_score} – ${match.away_score}`;
-  }
-  return "—";
-}
+
 
 export default async function MatchesPage() {
   const supabase = await createClient();
@@ -148,35 +141,12 @@ function MatchSection({
                   <th className="px-3 py-2">Match</th>
                   <th className="px-3 py-2">Score</th>
                   <th className="px-3 py-2">Status</th>
-                  <th className="px-3 py-2"></th>
                 </tr>
               </thead>
               <tbody>
                 {matches.map((match) => (
-                  <tr key={match.id} className="border-t">
-                    <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">
-                      <ClientTime timeString={match.match_time} showDate />
-                    </td>
-                    <td className="px-3 py-2 font-medium">
-                      {match.home_team} vs {match.away_team}
-                      {match.stage ? (
-                        <span className="ml-2 text-xs font-normal text-muted-foreground">
-                          {match.stage}
-                        </span>
-                      ) : null}
-                    </td>
-                    <td className="px-3 py-2 tabular-nums">{scoreLabel(match)}</td>
-                    <td className="px-3 py-2">
-                      <Badge variant="secondary">{match.status}</Badge>
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      <Link href={`/bets/create?matchId=${match.id}`}>
-                        <Button variant="outline" size="sm" className="h-7 text-xs">
-                          + Bet
-                        </Button>
-                      </Link>
-                    </td>
-                  </tr>
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  <MatchRowInteractive key={match.id} match={match as any} />
                 ))}
               </tbody>
             </table>
