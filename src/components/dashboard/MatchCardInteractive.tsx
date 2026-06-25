@@ -10,6 +10,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ClientTime } from "@/components/ui/ClientTime";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 type MatchRow = {
   id: string;
@@ -128,6 +130,17 @@ export function MatchCardInteractive({ match }: { match: MatchRow }) {
                 )}
               </div>
             )}
+          </div>
+          
+          <div className="pt-4 flex justify-center border-t border-border/50">
+            <Link 
+              href={`/bets/create?matchId=${match.id}&prompt=${encodeURIComponent(`I want to bet on the match ${match.home_team || "TBD"} vs ${match.away_team || "TBD"}...`)}`} 
+              className="w-full"
+            >
+              <Button className="w-full font-bold">
+                + Place Bet on this Match
+              </Button>
+            </Link>
           </div>
         </div>
       </DialogContent>
