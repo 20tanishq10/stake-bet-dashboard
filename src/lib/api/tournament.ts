@@ -53,25 +53,25 @@ export async function getPlayerStats(endpoint: string): Promise<PlayerStat[]> {
   if (result.length === 0) {
     if (endpoint === "topscorers") {
       return [
-        { player: { id: 1, name: "Lionel Messi", photo: "https://media.api-sports.io/football/players/154.png" }, statistics: [{ team: { id: 26, name: "Argentina", logo: "https://media.api-sports.io/football/teams/26.png" }, goals: { total: 5, assists: null }, cards: { yellow: 0, red: 0 } }] },
-        { player: { id: 2, name: "Kylian Mbappé", photo: "https://media.api-sports.io/football/players/278.png" }, statistics: [{ team: { id: 77, name: "France", logo: "https://media.api-sports.io/football/teams/77.png" }, goals: { total: 4, assists: null }, cards: { yellow: 0, red: 0 } }] },
-        { player: { id: 3, name: "Erling Haaland", photo: "https://media.api-sports.io/football/players/1100.png" }, statistics: [{ team: { id: 34, name: "Norway", logo: "https://media.api-sports.io/football/teams/34.png" }, goals: { total: 4, assists: null }, cards: { yellow: 1, red: 0 } }] },
+        { player: { id: 1, name: "Lionel Messi", photo: "https://media.api-sports.io/football/players/154.png" }, statistics: [{ team: { id: 26, name: "Argentina", logo: "https://flagcdn.com/w40/ar.png" }, goals: { total: 5, assists: null }, cards: { yellow: 0, red: 0 } }] },
+        { player: { id: 2, name: "Kylian Mbappé", photo: "https://media.api-sports.io/football/players/278.png" }, statistics: [{ team: { id: 77, name: "France", logo: "https://flagcdn.com/w40/fr.png" }, goals: { total: 4, assists: null }, cards: { yellow: 0, red: 0 } }] },
+        { player: { id: 3, name: "Erling Haaland", photo: "https://media.api-sports.io/football/players/1100.png" }, statistics: [{ team: { id: 34, name: "Norway", logo: "https://flagcdn.com/w40/no.png" }, goals: { total: 4, assists: null }, cards: { yellow: 1, red: 0 } }] },
       ];
     }
     if (endpoint === "topassists") {
       return [
-        { player: { id: 4, name: "Kevin De Bruyne", photo: "https://media.api-sports.io/football/players/629.png" }, statistics: [{ team: { id: 1, name: "Belgium", logo: "https://media.api-sports.io/football/teams/1.png" }, goals: { total: null, assists: 4 }, cards: { yellow: 0, red: 0 } }] },
-        { player: { id: 1, name: "Lionel Messi", photo: "https://media.api-sports.io/football/players/154.png" }, statistics: [{ team: { id: 26, name: "Argentina", logo: "https://media.api-sports.io/football/teams/26.png" }, goals: { total: null, assists: 3 }, cards: { yellow: 0, red: 0 } }] },
+        { player: { id: 4, name: "Kevin De Bruyne", photo: "https://media.api-sports.io/football/players/629.png" }, statistics: [{ team: { id: 1, name: "Belgium", logo: "https://flagcdn.com/w40/be.png" }, goals: { total: null, assists: 4 }, cards: { yellow: 0, red: 0 } }] },
+        { player: { id: 1, name: "Lionel Messi", photo: "https://media.api-sports.io/football/players/154.png" }, statistics: [{ team: { id: 26, name: "Argentina", logo: "https://flagcdn.com/w40/ar.png" }, goals: { total: null, assists: 3 }, cards: { yellow: 0, red: 0 } }] },
       ];
     }
     if (endpoint === "topyellowcards") {
       return [
-        { player: { id: 5, name: "Casemiro", photo: "https://media.api-sports.io/football/players/103.png" }, statistics: [{ team: { id: 6, name: "Brazil", logo: "https://media.api-sports.io/football/teams/6.png" }, goals: { total: null, assists: null }, cards: { yellow: 3, red: 0 } }] },
+        { player: { id: 5, name: "Casemiro", photo: "https://media.api-sports.io/football/players/103.png" }, statistics: [{ team: { id: 6, name: "Brazil", logo: "https://flagcdn.com/w40/br.png" }, goals: { total: null, assists: null }, cards: { yellow: 3, red: 0 } }] },
       ];
     }
     if (endpoint === "topredcards") {
       return [
-        { player: { id: 6, name: "Cristian Romero", photo: "https://media.api-sports.io/football/players/1454.png" }, statistics: [{ team: { id: 26, name: "Argentina", logo: "https://media.api-sports.io/football/teams/26.png" }, goals: { total: null, assists: null }, cards: { yellow: 0, red: 1 } }] },
+        { player: { id: 6, name: "Cristian Romero", photo: "https://media.api-sports.io/football/players/1454.png" }, statistics: [{ team: { id: 26, name: "Argentina", logo: "https://flagcdn.com/w40/ar.png" }, goals: { total: null, assists: null }, cards: { yellow: 0, red: 1 } }] },
       ];
     }
   }
