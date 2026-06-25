@@ -139,7 +139,7 @@ export function MatchRowInteractive({ match }: { match: MatchRow }) {
           
           <div className="pt-4 flex justify-center border-t border-border/50">
             <Link 
-              href={`/bets/create?matchId=${match.id}&prompt=${encodeURIComponent(`I want to bet on the match ${match.home_team || "TBD"} vs ${match.away_team || "TBD"}...`)}`} 
+              href={`/bets/create?matchId=${match.id}&prompt=${encodeURIComponent(`${match.home_team || "TBD"} vs ${match.away_team || "TBD"}: `)}`} 
               className="w-full"
             >
               <Button className="w-full font-bold">
