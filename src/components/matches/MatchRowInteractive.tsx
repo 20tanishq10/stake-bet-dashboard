@@ -53,7 +53,7 @@ export function MatchRowInteractive({ match }: { match: MatchRow }) {
     }
   }, [open, match.id, details]);
 
-  const apiData = details?.data;
+  const apiData = Array.isArray(details?.data) ? details?.data : details?.data?.response;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -153,6 +153,21 @@ export function KnockoutLadder({ matches }: { matches: MatchRow[] }) {
 }
 
 function MatchDialog({ selectedMatch, onClose }: { selectedMatch: MatchRow | null, onClose: () => void }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [details, setDetails] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (selectedMatch?.id) {
+      setLoading(true);
+      fetch(`/api/matches/${selectedMatch.id}/details`)
+        .then((res) => res.json())
+        .then((data) => setDetails(data))
+        .catch(() => setDetails(null))
+        .finally(() => setLoading(false));
+    }
+  }, [selectedMatch]);
+
   if (!selectedMatch) return null;
 
   return (
@@ -177,6 +192,44 @@ function MatchDialog({ selectedMatch, onClose }: { selectedMatch: MatchRow | nul
           
           <div className="text-center text-sm font-medium text-muted-foreground bg-secondary/20 py-2 rounded-lg">
             {selectedMatch.match_time ? <ClientTime timeString={selectedMatch.match_time} showDate /> : "Kickoff Date TBA"}
+          </div>
+
+          <div className="space-y-4">
+            <h4 className="font-semibold text-sm border-b pb-2">Live Insights</h4>
+            {loading ? (
+              <p className="text-sm text-muted-foreground animate-pulse text-center py-4">Fetching live data...</p>
+            ) : !(Array.isArray(details?.data) ? details?.data : details?.data?.response) ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No detailed statistics available yet.</p>
+            ) : (
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between border-b pb-1">
+                  <span className="text-muted-foreground">Referee</span>
+                  <span>{(Array.isArray(details?.data) ? details?.data : details?.data?.response)[0]?.fixture?.referee || "TBA"}</span>
+                </div>
+                <div className="flex justify-between border-b pb-1">
+                  <span className="text-muted-foreground">Venue</span>
+                  <span>{(Array.isArray(details?.data) ? details?.data : details?.data?.response)[0]?.fixture?.venue?.name || "TBA"}</span>
+                </div>
+                <div className="flex justify-between border-b pb-1">
+                  <span className="text-muted-foreground">Time Elapsed</span>
+                  <span>{(Array.isArray(details?.data) ? details?.data : details?.data?.response)[0]?.fixture?.status?.elapsed ? `${(Array.isArray(details?.data) ? details?.data : details?.data?.response)[0].fixture.status.elapsed}'` : "Not started"}</span>
+                </div>
+                {(Array.isArray(details?.data) ? details?.data : details?.data?.response)[0]?.events && (Array.isArray(details?.data) ? details?.data : details?.data?.response)[0].events.length > 0 && (
+                  <div className="mt-4 pt-2">
+                    <h5 className="font-medium text-xs mb-2 uppercase text-muted-foreground">Key Events</h5>
+                    <ul className="space-y-2">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                      {(Array.isArray(details?.data) ? details?.data : details?.data?.response)[0].events.slice(0, 4).map((evt: any, idx: number) => (
+                        <li key={idx} className="flex gap-2 text-xs">
+                          <span className="font-medium w-8">{evt.time.elapsed}&apos;</span>
+                          <span>{evt.type} - {evt.player.name} ({evt.team.name})</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           
           {selectedMatch.status === "Scheduled" && selectedMatch.home_team !== "TBD" && (
