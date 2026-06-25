@@ -5,6 +5,8 @@ import { MatchCardInteractive } from "@/components/dashboard/MatchCardInteractiv
 import { AIPromptBar } from "@/components/dashboard/AIPromptBar";
 import { HoverActiveBets } from "@/components/dashboard/HoverActiveBets";
 
+import { InterestedToggle } from "@/app/profile/InterestedToggle";
+
 type ActiveBetRow = {
   id: string;
   stake_amount: number;
@@ -32,6 +34,7 @@ type ActivityRow = {
 type ProfileRow = {
   display_name: string | null;
   wallet_balance: number | null;
+  is_interested: boolean;
 };
 
 type MatchRow = {
@@ -52,7 +55,7 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
 
   const [{ data: profile }, { data: activeBets }, { data: activity }, { data: dashboardMatches }] = await Promise.all([
-    supabase.from("profiles").select("display_name, wallet_balance").eq("id", user?.id ?? "").maybeSingle(),
+    supabase.from("profiles").select("display_name, wallet_balance, is_interested").eq("id", user?.id ?? "").maybeSingle(),
     supabase
       .from("bet_participations")
       .select("id, stake_amount, share_pct, payout_amount, joined_at, bets(id, title, status, lock_at, net_result, rule)")
@@ -145,6 +148,9 @@ export default async function DashboardPage() {
           <CardHeader className="pb-2">
             <CardDescription>Member</CardDescription>
             <CardTitle className="text-2xl">{typedProfile?.display_name ?? user?.email ?? "User"}</CardTitle>
+            <div className="pt-3">
+              <InterestedToggle initialValue={typedProfile?.is_interested ?? true} />
+            </div>
           </CardHeader>
         </Card>
       </div>

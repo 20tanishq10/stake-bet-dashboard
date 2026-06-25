@@ -32,7 +32,7 @@ export function InterestedToggle({ initialValue }: { initialValue: boolean }) {
         onCheckedChange={handleToggle} 
         disabled={loading} 
       />
-      <Label htmlFor="interested">Allow Brokers to place bets on my behalf</Label>
+      <Label htmlFor="interested" className="text-xs font-normal">Active Status (Allow broker betting)</Label>
     </div>
   );
 }

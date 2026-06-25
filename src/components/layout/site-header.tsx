@@ -22,6 +22,7 @@ export function SiteHeader() {
             ["Bets", "/bets"],
             ["Activity", "/activity"],
             ["Analytics", "/analytics"],
+            ["Profile", "/profile"],
             ["Admin", "/admin"],
           ].map(([label, href]) => (
             <a
