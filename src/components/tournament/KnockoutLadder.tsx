@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -58,8 +58,43 @@ export function KnockoutLadder({ matches }: { matches: MatchRow[] }) {
 
   const [selectedMatch, setSelectedMatch] = useState<MatchRow | null>(null);
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
+  const onMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+  };
+
+  const onMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  const onMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
   return (
-    <div className="w-full overflow-x-auto pb-8 scrollbar-thin scrollbar-thumb-primary/20">
+    <div 
+      ref={scrollRef}
+      onMouseDown={onMouseDown}
+      onMouseLeave={onMouseLeave}
+      onMouseUp={onMouseUp}
+      onMouseMove={onMouseMove}
+      className={`w-full overflow-x-auto pb-8 scrollbar-thin scrollbar-thumb-primary/20 ${isDragging ? "cursor-grabbing select-none" : "cursor-grab"}`}
+    >
       <div className="flex flex-row min-w-max space-x-12 px-8 items-stretch min-h-[1400px] bg-background/50 rounded-xl p-8 border shadow-inner">
         {knockoutStages.map((stage, colIndex) => {
           const actualMatches = grouped[stage] || [];
